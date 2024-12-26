@@ -191,8 +191,8 @@ class f18:
     a = 0
     b = 6
 
-    min_x = 1.9999997999999999
-    min_y = 4.0000000046709376e-14
+    min_x = 2
+    min_y = 0
 
     @staticmethod
     def eval(x):

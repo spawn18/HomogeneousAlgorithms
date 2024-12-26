@@ -1,4 +1,4 @@
-import functions
+from functions import *
 
 def find_minimum_brute_force(f, k):
     xm = f.a
@@ -11,6 +11,7 @@ def find_minimum_brute_force(f, k):
             ym = y
     return (xm, ym)
 
-for f in functions.funcs:
+print("Минимумы функций")
+for i, f in enumerate(funcs):
     t = find_minimum_brute_force(f, 10000000)
-    print("min_x = {} min_y = {}".format(t[0], t[1]))
+    print("Функция #{}: x = {}\t y = {}".format(i+1, t[0], t[1]))

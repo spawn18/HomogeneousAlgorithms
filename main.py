@@ -2,10 +2,9 @@ import math
 import numpy as np
 import functions
 from scipy.interpolate import CubicSpline, PPoly
-from scipy.optimize import direct, Bounds
 
 # Оценить константу липшица методом Стронгина
-# (найти все наклоны отрезков)
+# (найти все наклоны отрезков и выбрать наибольшой)
 def lipschitz_estimate_f(points):
     max = 0
     for i in range(0, len(points)):
@@ -16,9 +15,13 @@ def lipschitz_estimate_f(points):
                     max = L
     return max
 
+# вспомогательная функция, создает вектор степеней
 def quad_powers(x):
     return [x**(2-i) for i in range(0, 3)]
 
+# поиск минимума p
+# данная функция строит P = m - KS, и разбивает P на 2 гладкие части
+# так, что можно искать минимум на каждой
 def find_minimum_p(spline, K):
     mat = np.array(spline.c).T
     ref = mat
@@ -67,11 +70,13 @@ def lipschitz_estimate_m(spline):
 
 results = []
 
+mul = 1
+
 # Вычисление оптимума каждой из функций
 for i, f in enumerate(functions.funcs):
-    a, b, f = f.a, f.b, f.eval # Начальные точки и функция вычисления
+    a, b = f.a, f.b # Начальные точки и функция вычисления
     eps = 10E-4 * (b - a) # Эпсилон
-    points = [(a, f(a)), (b, f(b))] # Точки на которых происходят вычисления
+    points = [(a, f.eval(a)), (b, f.eval(b))] # Точки на которых происходят вычисления
 
     diff = b-a # длина отрезка
     counter = 2 # кол-во вычислений функции f
@@ -84,18 +89,20 @@ for i, f in enumerate(functions.funcs):
         L_f = lipschitz_estimate_f(points) # аппроксимируем константу липшица кусочно-линейно
         spline = CubicSpline(x, y, bc_type='clamped') # вычисляем сплайн по точкам
         L_m = lipschitz_estimate_m(spline) # аппроксимируем константу липшица у сплайна
-        K = L_f + L_m + 100 # Считаем К
+        K = mul*(L_f + L_m) # Считаем К умнож. на множитель
+
         arg = find_minimum_p(spline, K) # находим минимум P
 
-        diff = min([math.fabs(p[0] - arg) for p in points])
-        points.append((arg, f(arg))) # добавляем новую точку
+        diff = min([math.fabs(p[0] - arg) for p in points]) # находим точность
+        points.append((arg, f.eval(arg))) # добавляем новую точку
         counter += 1 # увеличиваем счетчик
 
-    results.append((i+1, counter, arg, f(arg), diff)) # запись о результате
+
+    results.append((i+1, counter, arg, f.eval(arg), math.fabs(f.eval(arg)-f.min_y))) # запись о результате
 
 print("Результаты: ")
 for r in results:
-    print("Функция: {} Кол-во: {} Минимум: {} Значение: {} Точность: {}".format(r[0],r[1],r[2],r[3],r[4]))
+    print("Функция: {} Кол-во: {} x: {} y: {} Абсолютная погрешность y: {:f}".format(r[0],r[1],r[2],r[3],r[4]))
 
 
 
