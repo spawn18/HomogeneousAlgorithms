@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import functions
-from scipy.interpolate import CubicSpline
+from scipy.interpolate import CubicSpline, PPoly
 from scipy.optimize import minimize, Bounds, direct
 import matplotlib.pyplot as plt
 
@@ -17,9 +17,34 @@ def lipschitz_estimate_f(points):
     return max
 
 def find_min_p_2(spline, K):
-    coefs = spline.derivative().c
+    c = np.repeat(spline.c, 2, axis=1)
 
-    for i,c in enumerate
+    for i in range(0, len(coefs) - 1, 2):
+        mid = (x[i//2]+x[i//2+1])/2
+        off = mid-x[i//2]
+
+        c[2][i] -= 2*K
+        c[1][i+1] = 3*c[0][i+1]*off+c[1][i+1]
+        c[2][i+1] = 3*c[0][i+1]*off**2 + 2*c[1][i+1]*off + c[2][i+1]
+        c[3][i+1] = c[0][i+1]*off**3+c[1][i+1]*off**2+c[2][i+1]*off+c[3][i+1]
+
+    xmid = [(x[i]+x[i+1])/2 for i in range(len(x)-1)]
+    xp = xmid + x
+    xp.sort()
+
+    P = PPoly(xp, c, extrapolate=False)
+    roots = P.derivative().roots()
+
+    l = list()
+    for i in range(len(roots)):
+        if math.isnan(roots[i]):
+            j = x.index(roots[i-1])
+            l.append((roots[i-1]+x[j+1])/2)
+        else:
+            l.append(roots[i])
+
+    return max(l + xmid, key=lambda t: math.fabs(P(t)))
+
 # Поиск минимума P = m(x) - Ks(x)
 def find_min_p(spline, K):
 
@@ -61,7 +86,7 @@ for i, f in enumerate(functions.funcs):
         K = (L_f + L_m) + 1 # Считаем К умнож. на множитель
         #print("K:{}".format(K))
 
-        arg = find_min_p(spline, K) # находим минимум P
+        arg = find_min_p_2(spline, K) # находим минимум P
         diff = min([math.fabs(p[0] - arg) for p in points]) # находим точность
         points.append((arg, f.eval(arg))) # добавляем новую точку
         points.sort(key=lambda x: x[0]) # сортируем точки
