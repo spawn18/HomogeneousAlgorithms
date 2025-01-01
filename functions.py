@@ -15,12 +15,12 @@ class f2:
     a = 2.7
     b = 7.5
 
-    min_x = 4.86490896
-    min_y = -1.3213782438886077
+    min_x = 5.14573536
+    min_y = -1.8995993491520842
 
     @staticmethod
     def eval(x):
-        return math.sin(x)+math.sin(10*x)/3
+        return math.sin(x)+math.sin(10*x/3)
 
 class f3:
     a = -10
@@ -31,7 +31,7 @@ class f3:
 
     @staticmethod
     def eval(x):
-        return -sum([k*math.sin(int((k+1)*x+k)) for k in range(1, 6)])
+        return -sum([k*math.sin((k+1)*x+k) for k in range(1, 6)])
 
 class f4:
     a = 1.9
@@ -70,34 +70,34 @@ class f7:
     a = 2.7
     b = 7.5
 
-    min_x = 5.49634608
-    min_y = -0.9542709402765928
+    min_x = 5.19977856
+    min_y = -1.6013075464941817
 
     @staticmethod
     def eval(x):
-        return math.sin(x)+math.sin(10*x)/3 + math.log(x) - 0.84*x + 3
+        return math.sin(x)+math.sin(10*x/3) + math.log(x) - 0.84*x + 3
 
 class f8:
     a = -10
     b = 10
 
-    min_x = -0.9999979999999997
+    min_x = -1
     min_y = -15.0
 
     @staticmethod
     def eval(x):
-        return -sum([k*math.cos(int((k+1)*x+k)) for k in range(1, 6)])
+        return -sum([k*math.cos((k+1)*x+k) for k in range(1, 6)])
 
 class f9:
     a = 3.1
     b = 20.4
 
-    min_x = 5.15178173
-    min_y = -1.1616649783297421
+    min_x = 17.039198199999998
+    min_y = -1.9059611187153978
 
     @staticmethod
     def eval(x):
-        return math.sin(x) + math.sin(2*x)/3
+        return math.sin(x) + math.sin(2*x/3)
 
 class f10:
     a = 0
@@ -115,7 +115,7 @@ class f11:
     b = 6.28
 
     min_x = 2.0943949150000005
-    min_y = -1.4999999999999474
+    min_y = -1.5
 
     @staticmethod
     def eval(x):
@@ -125,12 +125,12 @@ class f12:
     a = 0
     b = 6.28
 
-    min_x = 3.141592608
-    min_y = -0.999999999999997
+    min_x = [math.pi, 3*math.pi/2]
+    min_y = -1
 
     @staticmethod
     def eval(x):
-        return (math.sin(x))**3+(math.cos(x))**3
+        return math.sin(x)**3+math.cos(x)**3
 
 class f13:
     a = 0.001

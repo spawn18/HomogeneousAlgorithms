@@ -2,9 +2,9 @@ import math
 import numpy as np
 import functions
 from scipy.interpolate import CubicSpline, PPoly
+import matplotlib.pyplot as plt
 
-# Оценить константу липшица методом Стронгина
-# (найти все наклоны отрезков и выбрать наибольшой)
+# Оценить константу липшица
 def lipschitz_estimate_f(points):
     max = 0
     for i in range(0, len(points)):
@@ -15,73 +15,60 @@ def lipschitz_estimate_f(points):
                     max = L
     return max
 
-# вспомогательная функция, создает вектор степеней
-def quad_powers(x):
-    return [x**(2-i) for i in range(0, 3)]
+def build_p(spline, K):
+    coefs = np.repeat(spline.c, 2, axis=1)
 
-# поиск минимума p
-# данная функция строит P = m - KS, и разбивает P на 2 гладкие части
-# так, что можно искать минимум на каждой
-def find_minimum_p(spline, K):
-    mat = np.array(spline.c).T
-    ref = mat
-    mat = np.repeat(mat, 2, axis=0)
+    for i in range(0, len(points) - 1, 2):
+        pass
+        #coefs[2][i] -= 2*K
+        #coefs[2][i+1] += 2*K
 
-    for i in range(0, len(mat), 2):
-        off = (points[i//2+1][0]+points[i//2][0])/2
-        com = off-points[i//2][0]
+    print(coefs)
+    xmid = [(x[i] + x[i + 1]) / 2 for i in range(0, len(x) - 1)]
+    xfunc = list(spline.x) + xmid
+    xfunc.sort()
 
-        mat[i][2] -= 2*K
-        mat[i+1][1] += 3*ref[i//2][0]*com
-        mat[i+1][2] += 3*ref[i//2][0]*com**2+2*ref[i//2][1]*com+2*K
-        mat[i+1][3] += ref[i//2][0]*com**3+ref[i//2][1]*com**2+ref[i//2][2]*com+2*K*(off-points[i//2+1][0])
+    return PPoly(coefs, xfunc, extrapolate=False)
 
-    x, y = zip(*points)
-    x_ = []
-    for i in range(0, len(x)-1):
-        x_.append(x[i])
-        x_.append((x[i]+x[i+1])/2)
-    x_.append(x[-1])
+# Поиск минимума P = m(x) - Ks(x)
+def find_min_p(spline, K):
+    P = build_p(spline, K)
+    roots = P.derivative().roots()
 
-    poly = PPoly(-mat.T, x_, extrapolate=False)
+    l = list()
+    for i in range(len(roots)):
+        if not math.isnan(roots[i]):
+            l.append(roots[i])
+        else:
+            j = P.x.index(roots[i-1])
+            xm = (roots[i-1]+P.x[j+1])/2
+            l.append(xm)
 
-    roots = poly.derivative().roots().flatten()
-    x__ = np.unique(np.concatenate([np.array(x_), roots]))
-    y_ = poly(x__)
-    roots = zip(x__, y_)
-    m = max(roots, key=lambda s: s[1])[0]
-    return m
+    min_x = min(P.x.tolist()+l, key=lambda t: P(t))
+    return min_x
 
+# Оценка константы Липшица у интерполянта
 def lipschitz_estimate_m(spline):
-    m = []
-    mat = np.array(spline.derivative().c).T
+    D = spline.derivative()
+    roots = D.roots()
+    roots = roots[np.isfinite(roots)]
+    l = list()
+    for i in range(len(roots)):
+        if not math.isnan(roots[i]):
+            l.append(roots[i])
 
-    for i, coefs in enumerate(mat):
-        xc = -coefs[1]/(2*coefs[0]) + x[i]
-        v = []
-        if x[i] <= xc <= x[i+1]:
-            v.append(math.fabs(np.dot(mat[i], np.array(quad_powers(xc-x[i])))))
-
-        v.append(math.fabs(np.dot(mat[i], np.array(quad_powers(0)))))
-        v.append(math.fabs(np.dot(mat[i], np.array(quad_powers(x[i+1]-x[i])))))
-
-        m.append(max(v))
-    return max(m)
+    return max(l+list(x), key=lambda t: math.fabs(D(t)))
 
 results = []
 
-mul = 1
-
-# Вычисление оптимума каждой из функций
-for i, f in enumerate(functions.funcs):
-    a, b = f.a, f.b # Начальные точки и функция вычисления
-    eps = 10E-4 * (b - a) # Эпсилон
-    points = [(a, f.eval(a)), (b, f.eval(b))] # Точки на которых происходят вычисления
-
-    diff = b-a # длина отрезка
+# Вычисление минимума каждой из функций
+for i, f in enumerate(functions.funcs[:1]):
+    eps = 10E-4 * (f.b - f.a) # Точность
+    points = [(f.a, f.eval(f.a)),  (f.b, f.eval(f.b))] # Точки на которых происходят вычисления
+    diff = f.b-f.a # длина отрезка
     counter = 2 # кол-во вычислений функции f
 
-    # Пока точность не меньше эпсилона
+    # Пока разность между сгенер. точками x не меньше эпсилона
     while diff >= eps:
         points.sort(key=lambda x: x[0]) # сортируем точки
         x, y = zip(*points) # разбиваем на 2 массива, x и y
@@ -89,9 +76,9 @@ for i, f in enumerate(functions.funcs):
         L_f = lipschitz_estimate_f(points) # аппроксимируем константу липшица кусочно-линейно
         spline = CubicSpline(x, y, bc_type='clamped') # вычисляем сплайн по точкам
         L_m = lipschitz_estimate_m(spline) # аппроксимируем константу липшица у сплайна
-        K = mul*(L_f + L_m) # Считаем К умнож. на множитель
+        K = (L_f + L_m) + 1 # Считаем К умнож. на множитель
 
-        arg = find_minimum_p(spline, K) # находим минимум P
+        arg = find_min_p(spline, K) # находим минимум P
 
         diff = min([math.fabs(p[0] - arg) for p in points]) # находим точность
         points.append((arg, f.eval(arg))) # добавляем новую точку
@@ -99,6 +86,17 @@ for i, f in enumerate(functions.funcs):
 
 
     results.append((i+1, counter, arg, f.eval(arg), math.fabs(f.eval(arg)-f.min_y))) # запись о результате
+
+P = build_p(spline, K)
+xs = np.arange(f.a, f.b, 0.1)
+fig, ax = plt.subplots(figsize=(6.5, 4))
+ax.plot(x,y,'o')
+ax.plot(xs, spline(xs), label='m')
+ax.plot(xs, f.eval(xs), label='f')
+ax.plot(xs, P(xs), label='p')
+ax.set_xlim(f.a, f.b)
+ax.legend(loc='lower left', ncol=2)
+fig.savefig('test.png')
 
 print("Результаты: ")
 for r in results:
