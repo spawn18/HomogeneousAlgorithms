@@ -18,7 +18,7 @@ def lipschitz_estimate_f(points):
 
 def find_min_p_2(spline, K):
     coefs = spline.derivative().c
-    
+
     for i,c in enumerate
 # Поиск минимума P = m(x) - Ks(x)
 def find_min_p(spline, K):
