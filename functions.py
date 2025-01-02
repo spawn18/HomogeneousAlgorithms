@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 class f1:
     a = -1.5
@@ -20,7 +21,7 @@ class f2:
 
     @staticmethod
     def eval(x):
-        return math.sin(x)+math.sin(10*x/3)
+        return np.sin(x)+np.sin(10*x/3)
 
 class f3:
     a = -10
@@ -31,7 +32,7 @@ class f3:
 
     @staticmethod
     def eval(x):
-        return -sum([k*math.sin((k+1)*x+k) for k in range(1, 6)])
+        return -sum([k*np.sin((k+1)*x+k) for k in range(1, 6)])
 
 class f4:
     a = 1.9
@@ -42,7 +43,7 @@ class f4:
 
     @staticmethod
     def eval(x):
-        return -(16*x**2-24*x+5)*math.exp(-x)
+        return -(16*x**2-24*x+5)*np.exp(-x)
 
 class f5:
     a = 0
@@ -53,7 +54,7 @@ class f5:
 
     @staticmethod
     def eval(x):
-        return (3*x-1.4)*math.sin(18*x)
+        return (3*x-1.4)*np.sin(18*x)
 
 class f6:
     a = -10
@@ -64,7 +65,7 @@ class f6:
 
     @staticmethod
     def eval(x):
-        return -(x+math.sin(x))*math.exp(-x**2)
+        return -(x+np.sin(x))*np.exp(-x**2)
 
 class f7:
     a = 2.7
@@ -75,7 +76,7 @@ class f7:
 
     @staticmethod
     def eval(x):
-        return math.sin(x)+math.sin(10*x/3) + math.log(x) - 0.84*x + 3
+        return np.sin(x)+np.sin(10*x/3) + np.log(x) - 0.84*x + 3
 
 class f8:
     a = -10
@@ -86,7 +87,7 @@ class f8:
 
     @staticmethod
     def eval(x):
-        return -sum([k*math.cos((k+1)*x+k) for k in range(1, 6)])
+        return -sum([k*np.cos((k+1)*x+k) for k in range(1, 6)])
 
 class f9:
     a = 3.1
@@ -97,7 +98,7 @@ class f9:
 
     @staticmethod
     def eval(x):
-        return math.sin(x) + math.sin(2*x/3)
+        return np.sin(x) + np.sin(2*x/3)
 
 class f10:
     a = 0
@@ -108,7 +109,7 @@ class f10:
 
     @staticmethod
     def eval(x):
-        return -x*math.sin(x)
+        return -x*np.sin(x)
 
 class f11:
     a = -1.57
@@ -119,7 +120,7 @@ class f11:
 
     @staticmethod
     def eval(x):
-        return 2*math.cos(x)+math.cos(2*x)
+        return 2*np.cos(x)+np.cos(2*x)
 
 class f12:
     a = 0
@@ -130,7 +131,7 @@ class f12:
 
     @staticmethod
     def eval(x):
-        return math.sin(x)**3+math.cos(x)**3
+        return np.sin(x)**3+np.cos(x)**3
 
 class f13:
     a = 0.001
@@ -141,7 +142,7 @@ class f13:
 
     @staticmethod
     def eval(x):
-        return -math.cbrt(x**2) + math.cbrt(x**2-1)
+        return -np.cbrt(x**2) + np.cbrt(x**2-1)
 
 class f14:
     a = 0
@@ -152,7 +153,7 @@ class f14:
 
     @staticmethod
     def eval(x):
-        return -math.exp(-x)*math.sin(2*math.pi*x)
+        return -np.exp(-x)*np.sin(2*math.pi*x)
 
 class f15:
     a = -5
@@ -174,7 +175,7 @@ class f16:
 
     @staticmethod
     def eval(x):
-        return 2*(x-3)**2+math.exp(0.5*x**2)
+        return 2*(x-3)**2+np.exp(0.5*x**2)
 
 class f17:
     a = -4
@@ -199,7 +200,7 @@ class f18:
         if x <= 3:
             return (x-2)**2
         else:
-            return 2*math.log(x-2)+1
+            return 2*np.log(x-2)+1
 
 class f19:
     a = 0
@@ -210,7 +211,7 @@ class f19:
 
     @staticmethod
     def eval(x):
-        return -x+math.sin(3*x)-1
+        return -x+np.sin(3*x)-1
 
 class f20:
     a = -10
@@ -221,7 +222,7 @@ class f20:
 
     @staticmethod
     def eval(x):
-        return (math.sin(x)-x)*math.exp(-x**2)
+        return (np.sin(x)-x)*np.exp(-x**2)
 
 
 funcs = [f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,f19,f20]

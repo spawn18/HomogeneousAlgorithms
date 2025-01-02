@@ -16,34 +16,44 @@ def lipschitz_estimate_f(points):
                     max = L
     return max
 
-def find_min_p_2(spline, K):
+def build_P(spline, K):
     c = np.repeat(spline.c, 2, axis=1)
-
-    for i in range(0, len(coefs) - 1, 2):
-        mid = (x[i//2]+x[i//2+1])/2
-        off = mid-x[i//2]
+    r = np.repeat(spline.c, 2, axis=1)
+    for i in range(0, c.shape[1], 2):
+        mid = (spline.x[i//2] + spline.x[i//2+1])/2
+        off = mid-spline.x[i//2]
+        acc = mid-spline.x[i//2+1]
 
         c[2][i] -= 2*K
-        c[1][i+1] = 3*c[0][i+1]*off+c[1][i+1]
-        c[2][i+1] = 3*c[0][i+1]*off**2 + 2*c[1][i+1]*off + c[2][i+1]
-        c[3][i+1] = c[0][i+1]*off**3+c[1][i+1]*off**2+c[2][i+1]*off+c[3][i+1]
+        c[1][i+1] = 3*r[0][i]*off + r[1][i]
+        c[2][i+1] = 3*r[0][i]*off**2 + 2*r[1][i]*off + r[2][i] + 2*K
+        c[3][i+1] = r[0][i]*off**3 + r[1][i]*off**2 + r[2][i]*off + r[3][i] + 2*K*acc
 
-    xmid = [(x[i]+x[i+1])/2 for i in range(len(x)-1)]
-    xp = xmid + x
+    x_mid = [(spline.x[i] + spline.x[i + 1]) / 2 for i in range(len(spline.x) - 1)]
+    xp = x_mid + spline.x.tolist()
     xp.sort()
 
-    P = PPoly(xp, c, extrapolate=False)
-    roots = P.derivative().roots()
+    return PPoly(c, xp, extrapolate=False), x_mid
 
+
+def find_min_p_2(spline, K):
+    P, x_mid = build_P(spline, K)
+    roots = P.derivative().roots(discontinuity=False)
     l = list()
-    for i in range(len(roots)):
-        if math.isnan(roots[i]):
-            j = x.index(roots[i-1])
-            l.append((roots[i-1]+x[j+1])/2)
-        else:
-            l.append(roots[i])
 
-    return max(l + xmid, key=lambda t: math.fabs(P(t)))
+    if roots.size > 0:
+        if roots.size > 1:
+            for i in range(len(roots)-1):
+                if math.isnan(roots[i+1]):
+                    j, = np.where(P.x == roots[i])[0]
+                    l.append((roots[i]+P.x[j+1])/2)
+                    i += 1
+                elif not math.isnan(roots[i]):
+                    l.append(roots[i])
+        else:
+            l.append(roots[0])
+
+    return min(l+x_mid, key=lambda t: P(t))
 
 # Поиск минимума P = m(x) - Ks(x)
 def find_min_p(spline, K):
@@ -61,16 +71,17 @@ def find_min_p(spline, K):
 def lipschitz_estimate_m(spline):
     D = spline.derivative()
     DD = D.derivative()
-    roots = D.roots()
+    roots = D.roots(discontinuity=False)
     l = roots[np.isfinite(roots)].tolist()
     xspline = spline.x.tolist()
-    return max(l+xspline, key=lambda t: math.fabs(DD(t)))
+    return max(map(lambda t: math.fabs(D(t)), l+xspline))
 
 results = []
 
 # Вычисление минимума каждой из функций
 for i, f in enumerate(functions.funcs):
     eps = 10E-4 * (f.b - f.a) # Точность
+
     points = [(f.a, f.eval(f.a)),  (f.b, f.eval(f.b))] # Точки на которых происходят вычисления
     diff = f.b-f.a # длина отрезка
     counter = 2 # кол-во вычислений функции f
@@ -81,21 +92,29 @@ for i, f in enumerate(functions.funcs):
 
         L_f = lipschitz_estimate_f(points) # аппроксимируем константу липшица кусочно-линейно
         spline = CubicSpline(x, y, bc_type='clamped') # вычисляем сплайн по точкам
-        #print("Coefs: {}".format(spline.c))
         L_m = lipschitz_estimate_m(spline) # аппроксимируем константу липшица у сплайна
-        K = (L_f + L_m) + 1 # Считаем К умнож. на множитель
-        #print("K:{}".format(K))
+        K = L_f + L_m # Считаем К умнож. на множитель
 
         arg = find_min_p_2(spline, K) # находим минимум P
         diff = min([math.fabs(p[0] - arg) for p in points]) # находим точность
+
         points.append((arg, f.eval(arg))) # добавляем новую точку
         points.sort(key=lambda x: x[0]) # сортируем точки
-        #print("Points: {}".format(points))
         counter += 1 # увеличиваем счетчик
 
 
-    results.append((i+1, counter, arg, f.eval(arg), math.fabs(f.eval(arg)-f.min_y))) # запись о результате
 
+    xs = np.arange(f.a, f.b, 0.001)
+    P, _ = build_P(spline, K)
+    fig, ax = plt.subplots(figsize=(6.5, 4))
+    ax.plot(x, y, 'o')
+    ax.plot(xs, P(xs), label='p')
+    ax.plot(xs, np.vectorize(f.eval)(xs), label='f')
+    ax.set_xlim(f.a, f.b)
+    ax.legend(loc='lower left', ncol=2)
+    fig.savefig('f'+str(i+1))
+
+    results.append((i+1, counter, arg, f.eval(arg), math.fabs(f.eval(arg)-f.min_y))) # запись о результате
 
 print("Результаты: ")
 for r in results:
