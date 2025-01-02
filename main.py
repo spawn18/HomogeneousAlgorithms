@@ -70,8 +70,7 @@ def find_min_p(spline, K):
 # Оценка константы Липшица у интерполянта
 def lipschitz_estimate_m(spline):
     D = spline.derivative()
-    DD = D.derivative()
-    roots = D.roots(discontinuity=False)
+    roots = D.derivative().roots(discontinuity=False)
     l = roots[np.isfinite(roots)].tolist()
     xspline = spline.x.tolist()
     return max(map(lambda t: math.fabs(D(t)), l+xspline))
@@ -93,7 +92,7 @@ for i, f in enumerate(functions.funcs):
         L_f = lipschitz_estimate_f(points) # аппроксимируем константу липшица кусочно-линейно
         spline = CubicSpline(x, y, bc_type='clamped') # вычисляем сплайн по точкам
         L_m = lipschitz_estimate_m(spline) # аппроксимируем константу липшица у сплайна
-        K = L_f + L_m # Считаем К умнож. на множитель
+        K = 1 # Считаем К умнож. на множитель
 
         arg = find_min_p_2(spline, K) # находим минимум P
         diff = min([math.fabs(p[0] - arg) for p in points]) # находим точность
@@ -102,16 +101,15 @@ for i, f in enumerate(functions.funcs):
         points.sort(key=lambda x: x[0]) # сортируем точки
         counter += 1 # увеличиваем счетчик
 
-
-
     xs = np.arange(f.a, f.b, 0.001)
     P, _ = build_P(spline, K)
-    fig, ax = plt.subplots(figsize=(6.5, 4))
+    fig, ax = plt.subplots()
     ax.plot(x, y, 'o')
-    ax.plot(xs, P(xs), label='p')
-    ax.plot(xs, np.vectorize(f.eval)(xs), label='f')
+    ax.plot(xs, P(xs), label='Критерий (P)')
+    ax.plot(xs, np.vectorize(f.eval)(xs), label='Целевая функция (f)')
+    #ax.plot(xs, spline(xs), label='Кубический сплайн (m)')
     ax.set_xlim(f.a, f.b)
-    ax.legend(loc='lower left', ncol=2)
+    ax.legend(loc='upper left', ncol=2)
     fig.savefig('f'+str(i+1))
 
     results.append((i+1, counter, arg, f.eval(arg), math.fabs(f.eval(arg)-f.min_y))) # запись о результате
