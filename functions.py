@@ -5,7 +5,7 @@ class f1:
     a = -1.5
     b = 11
 
-    min_x = 10.0
+    min_x = [10.0]
     min_y = -29763.233333333344
 
     @staticmethod
@@ -16,7 +16,7 @@ class f2:
     a = 2.7
     b = 7.5
 
-    min_x = 5.14573536
+    min_x = [5.14573536]
     min_y = -1.8995993491520842
 
     @staticmethod
@@ -27,7 +27,7 @@ class f3:
     a = -10
     b = 10
 
-    min_x = -6.999998
+    min_x = [-6.999998]
     min_y = -13.666303261150684
 
     @staticmethod
@@ -38,7 +38,7 @@ class f4:
     a = 1.9
     b = 3.9
 
-    min_x = 2.8680339999999998
+    min_x = [2.8680339999999998]
     min_y = -3.8504507088002193
 
     @staticmethod
@@ -49,7 +49,7 @@ class f5:
     a = 0
     b = 1.2
 
-    min_x = 0.9660858
+    min_x = [0.9660858]
     min_y = -1.4890725386896007
 
     @staticmethod
@@ -60,7 +60,7 @@ class f6:
     a = -10
     b = 10
 
-    min_x = 0.6795780000000011
+    min_x = [0.6795780000000011]
     min_y = -0.8242393984752998
 
     @staticmethod
@@ -71,7 +71,7 @@ class f7:
     a = 2.7
     b = 7.5
 
-    min_x = 5.19977856
+    min_x = [5.19977856]
     min_y = -1.6013075464941817
 
     @staticmethod
@@ -82,7 +82,7 @@ class f8:
     a = -10
     b = 10
 
-    min_x = -1
+    min_x = [-1]
     min_y = -15.0
 
     @staticmethod
@@ -93,7 +93,7 @@ class f9:
     a = 3.1
     b = 20.4
 
-    min_x = 17.039198199999998
+    min_x = [17.039198199999998]
     min_y = -1.9059611187153978
 
     @staticmethod
@@ -104,7 +104,7 @@ class f10:
     a = 0
     b = 10
 
-    min_x = 7.978666
+    min_x = [7.978666]
     min_y = -7.916727371587444
 
     @staticmethod
@@ -115,7 +115,7 @@ class f11:
     a = -1.57
     b = 6.28
 
-    min_x = 2.0943949150000005
+    min_x = [2.0943949150000005]
     min_y = -1.5
 
     @staticmethod
@@ -137,7 +137,7 @@ class f13:
     a = 0.001
     b = 0.99
 
-    min_x = 0.7071067367
+    min_x = [0.7071067367]
     min_y = -1.5874010519681965
 
     @staticmethod
@@ -148,7 +148,7 @@ class f14:
     a = 0
     b = 4
 
-    min_x = 0.2248804
+    min_x = [0.2248804]
     min_y = -0.7886853874086694
 
     @staticmethod
@@ -159,7 +159,7 @@ class f15:
     a = -5
     b = 5
 
-    min_x = 2.4142140000000003
+    min_x = [2.4142140000000003]
     min_y = -0.03553390593270871
 
     @staticmethod
@@ -170,7 +170,7 @@ class f16:
     a = -3
     b = 3
 
-    min_x = 1.5907169999999997
+    min_x = [1.5907169999999997]
     min_y = 7.515924153082398
 
     @staticmethod
@@ -181,7 +181,7 @@ class f17:
     a = -4
     b = 4
 
-    min_x = -3.0
+    min_x = [-3.0]
     min_y = 7.0
 
     @staticmethod
@@ -192,7 +192,7 @@ class f18:
     a = 0
     b = 6
 
-    min_x = 2
+    min_x = [2]
     min_y = 0
 
     @staticmethod
@@ -206,7 +206,7 @@ class f19:
     a = 0
     b = 0.65
 
-    min_x = 0
+    min_x = [0]
     min_y = -1.0
 
     @staticmethod
@@ -217,7 +217,7 @@ class f20:
     a = -10
     b = 10
 
-    min_x = 1.1951360000000015
+    min_x = [1.1951360000000015]
     min_y = -0.06349052893638496
 
     @staticmethod
