@@ -27,8 +27,8 @@ class f3:
     a = -10
     b = 10
 
-    min_x = [-6.999998]
-    min_y = -13.666303261150684
+    min_x = [-6.77458, -0.49139, 5.79179]
+    min_y = -12.03124944216395
 
     @staticmethod
     def eval(x):
@@ -83,7 +83,7 @@ class f8:
     b = 10
 
     min_x = [-1]
-    min_y = -15.0
+    min_y = -14.508007927187695
 
     @staticmethod
     def eval(x):
