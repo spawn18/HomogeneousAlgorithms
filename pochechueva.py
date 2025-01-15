@@ -60,7 +60,6 @@ def minimize_p(P):
         else:
             l.append(roots[0])
     """
-
     return min(roots+P.x.tolist(), key=lambda t: P(t))
 
 # Оценка константы Липшица у интерполянта
@@ -96,6 +95,6 @@ def minimize(f, bounds, min_y):
 
     x0 = arg
     y0 = f(arg)
-    error = math.fabs(f(arg) - min_y)
+    error = math.fabs((f(arg) - min_y) / min_y)
 
-    return Result(x0=x0, y0=y0, bounds=bounds, points=points, count=counter, diff=diff, error=error, f=f, P=P)
+    return Result(x0=x0, y0=y0, bounds=bounds, points=points, count=counter, diff=diff, error=error, f=f, P=P, m=spline)

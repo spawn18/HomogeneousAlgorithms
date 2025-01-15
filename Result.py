@@ -1,6 +1,6 @@
 class Result:
 
-    def __init__(self, points, x0, y0, bounds, count, diff, error, f, P):
+    def __init__(self, points, x0, y0, bounds, count, diff, error, f, P, m, min_y):
         self.points = points
         self.bounds = bounds
         self.x0 = x0
@@ -10,3 +10,5 @@ class Result:
         self.error = error
         self.P = P
         self.f = f
+        self.m = m
+        self.min_y = min_y
