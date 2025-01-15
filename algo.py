@@ -3,6 +3,7 @@ import numpy as np
 from scipy.interpolate import CubicSpline, PPoly
 from scipy.optimize import direct
 from Result import Result
+import blackbox as bb
 
 def holders_estimate_f(points, k):
     max = 0
@@ -14,43 +15,11 @@ def holders_estimate_f(points, k):
                     max = L
     return max
 
-def poly_convert_basis(c, a, b):
-    off = b-a
-    new = c.copy()
-    new[1] = 3 * c[0] * off + c[1]
-    new[2] = 3 * c[0] * off ** 2 + 2 * c[1] * off + c[2]
-    new[3] = c[0] * off ** 3 + c[1] * off ** 2 + c[2] * off + c[3]
-    return new
-
-def poly_add(c, vals, basis):
-    r = c
-    r[0] = c[0] + vals[0]
-    r[1] = c[1] + 3*basis*vals[0]+vals[1]
-    r[2] = c[2] + 3*vals[0]*basis**2 + 2*vals[1]*basis + vals[2]
-    r[3] = c[3] + vals[0]*basis**3 + vals[1]*basis**2 + vals[2]*basis + vals[3]
-    return r
-
 def build_P(spline, K):
+
     def P(t):
-        return spline(t) - 5*K*min([math.fabs(t-s) for s in spline.x])
+        return spline(t) - 2*K*min([math.fabs(t-s) for i, s in enumerate(spline.x)])
     return P
-
-
-    c = np.repeat(spline.c, 2, axis=1)
-    r = np.repeat(spline.c, 2, axis=1)
-
-    x_mid = [(spline.x[i] + spline.x[i + 1]) / 2 for i in range(len(spline.x) - 1)]
-    xp = x_mid + spline.x.tolist()
-    xp.sort()
-
-    for i in range(0, c.shape[1], 2):
-        c[:, i] = poly_convert_basis(c[:,i], xp[i], xp[i+1])
-
-    #for i in range(0, c.shape[1], 2):
-    #    c[:,i] = poly_add(c[:,i], [0, 0, 2*K, 0], xp[i])
-    #    c[:,i+1] = poly_add(c[:,i], [0, 0, -2*K, 0], xp[i+1])
-
-    return PPoly(c, xp, extrapolate=False)
 
 # Оценка константы Липшица у интерполянта
 def lipschitz_estimate_m(spline):
@@ -83,7 +52,7 @@ def minimize(f, bounds, min_y):
         K = L_m+L_f # Считаем К умнож. на множитель
 
         P = build_P(spline, K)
-        res = direct(P, [bounds], locally_biased=False, vol_tol=10E-6, maxfun=10000)
+        res = direct(P, [bounds], locally_biased=False, vol_tol=10E-7, maxfun=100000, maxiter=100000)
         if res.success:
             arg = res.x[0] # находим минимум P
         else:

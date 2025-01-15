@@ -43,23 +43,6 @@ def build_P(spline, K):
 def minimize_p(P):
     roots = P.derivative().roots(discontinuity=False)
     roots = roots[np.isfinite(roots)].tolist()
-
-    """
-    if roots.size > 0:
-        if roots.size > 1:
-            i = 0
-            while i < len(roots):
-                if i+1 != len(roots):
-                    if math.isnan(roots[i+1]):
-                        j, = np.where(P.x == roots[i])[0]
-                        l.append((roots[i]+P.x[j+1])/2)
-                        i += 1
-                else:
-                    l.append(roots[i])
-                i += 1
-        else:
-            l.append(roots[0])
-    """
     return min(roots+P.x.tolist(), key=lambda t: P(t))
 
 # Оценка константы Липшица у интерполянта
@@ -97,4 +80,4 @@ def minimize(f, bounds, min_y):
     y0 = f(arg)
     error = math.fabs((f(arg) - min_y) / min_y)
 
-    return Result(x0=x0, y0=y0, bounds=bounds, points=points, count=counter, diff=diff, error=error, f=f, P=P, m=spline)
+    return Result(x0=x0, y0=y0, bounds=bounds, points=points, count=counter, diff=diff, error=error, f=f, P=P, m=spline, min_y=min_y)

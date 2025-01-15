@@ -25,7 +25,7 @@ def save_result(i, r):
     fig.savefig('f'+str(i))
 
 for i, f in enumerate(functions.funcs):
-    r = algo.minimize(f.eval, (f.a, f.b), f.min_y)
+    r = pochechueva.minimize(f.eval, (f.a, f.b), f.min_y)
     print_result(i+1, r)
     save_result(i+1, r)
 
