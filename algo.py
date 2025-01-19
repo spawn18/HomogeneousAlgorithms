@@ -3,7 +3,6 @@ import numpy as np
 from scipy.interpolate import CubicSpline, PPoly
 from scipy.optimize import direct
 from Result import Result
-import blackbox as bb
 
 def holders_estimate_f(points, k):
     max = 0
@@ -16,10 +15,13 @@ def holders_estimate_f(points, k):
     return max
 
 def build_P(spline, K):
-
     def P(t):
-        return spline(t) - 2*K*min([math.fabs(t-s) for i, s in enumerate(spline.x)])
+        D = spline.derivative()
+        return spline(t) - 2*K*min([math.fabs((map_speed(D(s)) if D(s) < 0 else 1)*(t-s)) for s in spline.x])
     return P
+
+def map_speed(t):
+    return (2/math.pi)*math.atan(math.fabs(t))+1
 
 # Оценка константы Липшица у интерполянта
 def lipschitz_estimate_m(spline):
@@ -36,7 +38,7 @@ def estimate_spline_velocity(spline):
     xspline = spline.x.tolist()
     return max(map(lambda t: math.fabs(D(t)), roots+xspline))
 
-def minimize(f, bounds, min_y):
+def minimize(f, bounds, min_y, count_limit=None):
     eps = 10E-4 * (bounds[1] - bounds[0])  # Точность
     points = [(bounds[0], f(bounds[0])), (bounds[1], f(bounds[1]))]  # Точки на которых происходят вычисления
     diff = bounds[1] - bounds[0]  # длина отрезка
@@ -51,12 +53,12 @@ def minimize(f, bounds, min_y):
         L_m = lipschitz_estimate_m(spline)  # аппроксимируем константу липшица у сплайна
         K = L_m+L_f # Считаем К умнож. на множитель
 
+        if K == 0:
+            K = 1
+
         P = build_P(spline, K)
-        res = direct(P, [bounds], locally_biased=False, vol_tol=10E-7, maxfun=100000, maxiter=100000)
-        if res.success:
-            arg = res.x[0] # находим минимум P
-        else:
-            print(res.message)
+        res = direct(P, [bounds], locally_biased=False)
+        arg = res.x[0] # находим минимум P
 
         diff = min([math.fabs(p - arg) for p in x])  # находим точность
 
@@ -64,8 +66,11 @@ def minimize(f, bounds, min_y):
         points.sort(key=lambda x: x[0])  # сортируем точки
         counter += 1  # увеличиваем счетчик
 
+        if count_limit != None:
+            if counter == count_limit:
+                break
+
     x0 = arg
     y0 = f(arg)
-    error = math.fabs((f(arg) - min_y)/min_y)
 
-    return Result(x0=x0, y0=y0, bounds=bounds, points=points, count=counter, diff=diff, error=error, f=f, P=P, m=spline, min_y=min_y)
+    return Result(name="Mine", x0=x0, y0=y0, bounds=bounds, points=points, count=counter, diff=diff, f=f, P=P, m=spline, min_y=min_y)
