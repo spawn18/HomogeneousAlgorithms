@@ -7,7 +7,6 @@ import algo
 import sergeev
 import statistics
 
-
 # Вычисление минимума каждой из функций
 def print_result(i, r, min_y):
     print("Функция: {} Кол-во: {} x0: {} y0: {} y: {}".format(i, r.count, r.x0, r.y0, min_y))
@@ -28,7 +27,7 @@ def save_result(i, r):
 
 algorithms = [
     {
-        "name": "Pochechueva",
+        "name": "pochechueva",
         "function": pochechueva.minimize,
         "count": []
     },
@@ -41,7 +40,7 @@ algorithms = [
 
 for a in algorithms:
     for i, f in enumerate(functions.funcs):
-        r = a["function"](f.eval, (f.a, f.b), None, False)
+        r = a["function"](f.eval, (f.a, f.b), 5, 'func'+str(i+1)+'/'+a['name'])
         a["count"].append(r.count)
         print_result(i+1, r, f.min_y)
 

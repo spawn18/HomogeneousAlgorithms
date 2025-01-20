@@ -3,7 +3,7 @@ import numpy as np
 
 class f1:
     a = -1.5
-    b = 11
+    b = 11.0
 
     min_x = [10.0]
     min_y = -29763.233333333344
@@ -24,8 +24,8 @@ class f2:
         return np.sin(x)+np.sin(10*x/3)
 
 class f3:
-    a = -10
-    b = 10
+    a = -10.0
+    b = 10.0
 
     min_x = [-6.77458, -0.49139, 5.79179]
     min_y = -12.03124944216395
@@ -46,7 +46,7 @@ class f4:
         return -(16*x**2-24*x+5)*np.exp(-x)
 
 class f5:
-    a = 0
+    a = 0.0
     b = 1.2
 
     min_x = [0.9660858]
@@ -57,8 +57,8 @@ class f5:
         return (3*x-1.4)*np.sin(18*x)
 
 class f6:
-    a = -10
-    b = 10
+    a = -10.0
+    b = 10.0
 
     min_x = [0.6795780000000011]
     min_y = -0.8242393984752998
@@ -79,8 +79,8 @@ class f7:
         return np.sin(x)+np.sin(10*x/3) + np.log(x) - 0.84*x + 3
 
 class f8:
-    a = -10
-    b = 10
+    a = -10.0
+    b = 10.0
 
     min_x = [-1]
     min_y = -14.508007927187695
@@ -101,8 +101,8 @@ class f9:
         return np.sin(x) + np.sin(2*x/3)
 
 class f10:
-    a = 0
-    b = 10
+    a = 0.0
+    b = 10.0
 
     min_x = [7.978666]
     min_y = -7.916727371587444
@@ -123,7 +123,7 @@ class f11:
         return 2*np.cos(x)+np.cos(2*x)
 
 class f12:
-    a = 0
+    a = 0.0
     b = 6.28
 
     min_x = [math.pi, 3*math.pi/2]
@@ -145,8 +145,8 @@ class f13:
         return -np.cbrt(x**2) + np.cbrt(x**2-1)
 
 class f14:
-    a = 0
-    b = 4
+    a = 0.0
+    b = 4.0
 
     min_x = [0.2248804]
     min_y = -0.7886853874086694
@@ -156,8 +156,8 @@ class f14:
         return -np.exp(-x)*np.sin(2*math.pi*x)
 
 class f15:
-    a = -5
-    b = 5
+    a = -5.0
+    b = 5.0
 
     min_x = [2.4142140000000003]
     min_y = -0.03553390593270871
@@ -167,8 +167,8 @@ class f15:
         return (x**2-5*x+6)/(x**2+1)
 
 class f16:
-    a = -3
-    b = 3
+    a = -3.0
+    b = 3.0
 
     min_x = [1.5907169999999997]
     min_y = 7.515924153082398
@@ -178,8 +178,8 @@ class f16:
         return 2*(x-3)**2+np.exp(0.5*x**2)
 
 class f17:
-    a = -4
-    b = 4
+    a = -4.0
+    b = 4.0
 
     min_x = [-3.0]
     min_y = 7.0
@@ -189,18 +189,15 @@ class f17:
         return x**6-15*x**4+27*x**2+250
 
 class f18:
-    a = 0
-    b = 6
+    a = 0.0
+    b = 6.0
 
     min_x = [2]
     min_y = 0
 
     @staticmethod
     def eval(x):
-        if x <= 3:
-            return (x-2)**2
-        else:
-            return 2*np.log(x-2)+1
+        return np.piecewise(x, [x <= 3, x > 3], [lambda x: np.power((x-2), 2), lambda x: 2*np.log(x-2)+1])
 
 class f19:
     a = 0
@@ -214,8 +211,8 @@ class f19:
         return -x+np.sin(3*x)-1
 
 class f20:
-    a = -10
-    b = 10
+    a = -10.0
+    b = 10.0
 
     min_x = [1.1951360000000015]
     min_y = -0.06349052893638496

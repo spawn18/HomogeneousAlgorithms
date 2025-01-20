@@ -1,4 +1,5 @@
 import math
+import os
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -32,7 +33,9 @@ def lipschitz_estimate(points):
 
 def build_F(points, mu):
     def F(t):
-        return max([points[j][1] + ((-1)**i)*mu[i-1]*(t-points[j][0]) for i in range(1, len(points)) for j in (i-1, i)])
+        conditions = [(points[i-1][0] <= t) & (t < points[i][0]) for i in range(1, len(points))]
+        funcs = [np.vectorize(lambda x, i=i: np.array([points[i-1][1]-mu[i-1]*(x-points[i-1][0]), points[i][1]+mu[i-1]*(x-points[i][0])]).max()) for i in range(1, len(points))]
+        return np.piecewise(t, conditions, funcs)
     return F
 
 def min_F(points, mu):
@@ -43,42 +46,48 @@ def min_F(points, mu):
     arg = min(p, key=lambda p: p[1])[0]
     return arg, t
 
-def minimize(f, bounds, count_limit=None, draw=False):
+def minimize(f, bounds, count_limit=None, save_file=None):
     eps = 10E-4 * (bounds[1] - bounds[0])  # Точность
     points = [(bounds[0], f(bounds[0])), (bounds[1], f(bounds[1]))]  # Точки на которых происходят вычисления
     counter = 2  # кол-во вычислений функции f
+    diff = bounds[1] - bounds[0]
 
     # Пока разность между сгенер. точками x не меньше эпсилона
     while True:
-        x, y = zip(*points)  # разбиваем на 2 массива, x и y
-
         mu = lipschitz_estimate(points)  # аппроксимируем константу липшица кусочно-линейно
         arg, t = min_F(points, mu)
-        diff = x[t]-x[t-1]  # находим точность
 
-        if diff <= eps:
-            x0 = min(points, key=lambda p: p[1])[0]
-            y0 = min(points, key=lambda p: p[1])[1]
+        x0 = min(points, key=lambda p: p[1])[0]
+        y0 = min(points, key=lambda p: p[1])[1]
+
+        diff = points[t][0]-points[t-1][0]  # находим точность
+
+        if diff < eps:
             break
-        else:
-            points.append((arg, f(arg)))  # добавляем новую точку
-            points.sort(key=lambda x: x[0])  # сортируем точки
+        if count_limit != None:
+            if counter == count_limit:
+                break
 
-            counter += 1  # увеличиваем счетчик
+        points.append((arg, f(arg)))  # добавляем новую точку
+        points.sort(key=lambda x: x[0])  # сортируем точки
+        counter += 1  # увеличиваем счетчик
 
-            if count_limit != None:
-                if counter == count_limit:
-                    break
-
-    if draw:
+    if save_file is not None:
+        x, y = zip(*points)
         F = build_F(points, mu)
-        xs = np.arange(f.a, f.b, 0.0001)
+        xs = np.arange(bounds[0], bounds[1], 0.0001)
         fig, ax = plt.subplots()
         ax.plot(x, y, 'o')
+        ax.plot(x0, y0, 'ro')
         ax.plot(xs, F(xs), label='Миноранта (F)')
         ax.plot(xs, f(xs), label='Целевая функция (f)')
         ax.legend(loc='best', ncol=2)
-        fig.savefig('f' + str(i))
-        fig.clf()
+
+        dir = os.path.dirname(save_file)
+        if not os.path.exists(dir):
+            os.mkdir(dir)
+
+        fig.savefig(save_file)
+        plt.close(fig)
 
     return Result(points, counter, x0, y0)
