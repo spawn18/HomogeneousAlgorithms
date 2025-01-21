@@ -29,20 +29,25 @@ algorithms = [
     {
         "name": "pochechueva",
         "function": pochechueva.minimize,
-        "count": []
+        "count": [1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4]
     },
     {
         "name": "sergeev",
         "function": sergeev.minimize,
-        "count": []
+        "count": [1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4]
+    },
+    {
+        "name": "algo",
+        "function": algo.minimize,
+        "count": [1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4]
     }
 ]
 
-for a in algorithms:
-    for i, f in enumerate(functions.funcs):
-        r = a["function"](f.eval, (f.a, f.b), 5, 'func'+str(i+1)+'/'+a['name'])
-        a["count"].append(r.count)
-        print_result(i+1, r, f.min_y)
+#for a in algorithms:
+#    for i, f in enumerate(functions.funcs):
+#        r = a["function"](f.eval, (f.a, f.b), None, 'func'+str(i+1)+'/'+a['name'])
+#        a["count"].append(r.count)
+#        print_result(i+1, r, f.min_y)
 
 statistics.plot_comparison(algorithms)
 

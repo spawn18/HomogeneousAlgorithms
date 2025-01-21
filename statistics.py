@@ -6,12 +6,15 @@ def plot_comparison(algorithms):
     names = list()
     x_axis = np.arange(20)
 
+
     for i in range(0, len(algorithms)):
         names.append(algorithms[i]["name"])
-        offset = 0.4*(i-len(algorithms)//2)
-        plt.bar(x_axis+offset, algorithms[i]["count"], 0.4, align='edge', label=algorithms[i]["name"])
+        offset = 0.2*(i-len(algorithms)//2)
+        plt.bar(x_axis+offset, algorithms[i]["count"], 0.2, align='edge', label=algorithms[i]["name"])
 
     plt.xticks(x_axis, [str(i) for i in range(1, 21)])
+    plt.gca().yaxis.get_major_locator().set_params(integer=True)
+    plt.gca().yaxis.grid()
     plt.xlabel("Функции")
     plt.ylabel("Кол-во вычислений")
     plt.title("Сравнение алгоритмов")

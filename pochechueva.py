@@ -17,8 +17,8 @@ def lipschitz_estimate_f(points):
     return max
 
 def build_P(spline, K):
-    def P(t):
-        return spline(t) - K*min([math.fabs((t-s)) for s in spline.x])
+    def P(t, s=spline):
+        return s(t) - K*min([math.fabs(t-s) for s in spline.x])
     return P
 
 def convert_coefs(c, off1, off2):
@@ -29,16 +29,16 @@ def convert_coefs(c, off1, off2):
     c[3] = r[0]*off**3 + r[1]*off**2 + r[2]*off + r[3]
     return c
 
-def minimize_cubic_piece(c, bounds):
+def minimize_cubic_piece(c, offset, bounds):
     roots = np.roots(np.polyder(c))
     roots = roots[np.isreal(roots)]
+    roots = roots[np.logical_and(bounds[0] <= roots+offset, roots+offset <= bounds[1])]
 
     mins = [bounds[0], bounds[1]]
 
     if roots.size != 0:
-        m = min(roots, key=lambda x: np.polyval(c, x-bounds[0])) + bounds[0]
-        if bounds[0] <= m <= bounds[1]:
-            mins.append(m)
+        m = min(roots, key=lambda x: np.polyval(c, x-offset)) + offset
+        mins.append(m)
     return mins
 
 def minimize_P(spline, points, K):
@@ -54,14 +54,14 @@ def minimize_P(spline, points, K):
         int1 = (points[i-1][0], x_intersect)
         int2 = (x_intersect, points[i][0])
 
-        c1 = convert_coefs(np.array([0, 0, 2*K, 0]), points[i-1][0], points[i-1][0])
-        c2 = convert_coefs(np.array([0, 0, -2*K, 0]), points[i][0], points[i-1][0])
+        c1 = convert_coefs(np.array([0, 0, -2*K, 0]), points[i-1][0], points[i-1][0])
+        c2 = convert_coefs(np.array([0, 0, 2*K, 0]), points[i][0], points[i-1][0])
 
         c1 = spline.c[:,i-1] + c1
         c2 = spline.c[:,i-1] + c2
 
-        s1_mins = minimize_cubic_piece(c1, int1)
-        s2_mins = minimize_cubic_piece(c2, int2)
+        s1_mins = minimize_cubic_piece(c1, points[i - 1][0], int1)
+        s2_mins = minimize_cubic_piece(c2, points[i - 1][0], int2)
 
         mins.extend(s1_mins + s2_mins)
 
@@ -114,8 +114,9 @@ def minimize(f, bounds, count_limit=None, save_file=None):
         fig, ax = plt.subplots()
         ax.plot(x, y, 'o')
         ax.plot(x0, y0, 'or')
-        ax.plot(xs, np.vectorize(P)(xs), label='Критерий (P)')
-        ax.plot(xs, f(xs), label='Целевая функция (f)')
+        ax.plot(xs, spline(xs), 'blue', label='Интерполянт (m)')
+        ax.plot(xs, np.vectorize(P)(xs), 'red', label='Критерий (P)')
+        ax.plot(xs, f(xs), 'green', label='Целевая функция (f)')
         ax.legend(loc='best', ncol=2)
 
         dir = os.path.dirname(save_file)
