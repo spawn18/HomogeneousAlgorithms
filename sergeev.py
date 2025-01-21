@@ -1,11 +1,11 @@
 import math
 import os
-
 import numpy as np
 from matplotlib import pyplot as plt
-
+import statistics
 from Result import Result
 
+ALGO_NAME = "sergeev"
 
 def lipschitz_estimate(points):
     r = 1.1
@@ -34,7 +34,7 @@ def lipschitz_estimate(points):
 def build_F(points, mu):
     def F(t):
         conditions = [(points[i-1][0] <= t) & (t < points[i][0]) for i in range(1, len(points))]
-        funcs = [np.vectorize(lambda x, i=i: np.array([points[i-1][1]-mu[i-1]*(x-points[i-1][0]), points[i][1]+mu[i-1]*(x-points[i][0])]).max()) for i in range(1, len(points))]
+        funcs = [np.vectorize(lambda x, i=j: np.array([points[i-1][1]-mu[i-1]*(x-points[i-1][0]), points[i][1]+mu[i-1]*(x-points[i][0])]).max()) for j in range(1, len(points))]
         return np.piecewise(t, conditions, funcs)
     return F
 
@@ -46,48 +46,58 @@ def min_F(points, mu):
     arg = min(p, key=lambda p: p[1])[0]
     return arg, t
 
-def minimize(f, bounds, count_limit=None, save_file=None):
-    eps = 10E-4 * (bounds[1] - bounds[0])  # Точность
-    points = [(bounds[0], f(bounds[0])), (bounds[1], f(bounds[1]))]  # Точки на которых происходят вычисления
-    counter = 2  # кол-во вычислений функции f
-    diff = bounds[1] - bounds[0]
+def minimize(funcs, count_limit=None, save=False):
+    results = list()
 
-    # Пока разность между сгенер. точками x не меньше эпсилона
-    while True:
-        mu = lipschitz_estimate(points)  # аппроксимируем константу липшица кусочно-линейно
-        arg, t = min_F(points, mu)
+    for i, f in enumerate(funcs):
+        eps = 10E-4 * (f.bounds[1] - f.bounds[0])  # Точность
+        points = [(f.bounds[0], f.eval(f.bounds[0])), (f.bounds[1], f.eval(f.bounds[1]))]  # Точки на которых происходят вычисления
+        counter = 2  # кол-во вычислений функции f
+        diff = f.bounds[1] - f.bounds[0]
 
-        x0 = min(points, key=lambda p: p[1])[0]
-        y0 = min(points, key=lambda p: p[1])[1]
+        # Пока разность между сгенер. точками x не меньше эпсилона
+        while True:
+            mu = lipschitz_estimate(points)  # аппроксимируем константу липшица кусочно-линейно
+            arg, t = min_F(points, mu)
 
-        diff = points[t][0]-points[t-1][0]  # находим точность
+            x0 = min(points, key=lambda p: p[1])[0]
+            y0 = min(points, key=lambda p: p[1])[1]
 
-        if diff < eps:
-            break
-        if count_limit != None:
-            if counter == count_limit:
+            diff = points[t][0]-points[t-1][0]  # находим точность
+
+            if diff < eps:
                 break
+            if count_limit != None:
+                if counter == count_limit:
+                    break
 
-        points.append((arg, f(arg)))  # добавляем новую точку
-        points.sort(key=lambda x: x[0])  # сортируем точки
-        counter += 1  # увеличиваем счетчик
+            if save:
+                x, y = zip(*points)
+                F = build_F(points, mu)
+                xs = np.arange(f.bounds[0], f.bounds[1], 0.0001)
+                plt.plot(x, y, 'o', label='Точки испытаний')
+                plt.plot(x0, y0, 'ro', label='Текущий минимум')
+                plt.plot(xs, F(xs), 'red', label='Миноранта (F)')
+                plt.plot(xs, f.eval(xs), 'black', label='Целевая функция (f)')
+                plt.legend(loc='best', ncol=2)
 
-    if save_file is not None:
+                plt.savefig(os.path.join(statistics.iter_path(ALGO_NAME, i+1), str(counter-2)))
+                plt.clf()
+
+            points.append((arg, f.eval(arg)))  # добавляем новую точку
+            points.sort(key=lambda x: x[0])  # сортируем точки
+            counter += 1  # увеличиваем счетчик
+
         x, y = zip(*points)
         F = build_F(points, mu)
-        xs = np.arange(bounds[0], bounds[1], 0.0001)
-        fig, ax = plt.subplots()
-        ax.plot(x, y, 'o')
-        ax.plot(x0, y0, 'ro')
-        ax.plot(xs, F(xs), label='Миноранта (F)')
-        ax.plot(xs, f(xs), label='Целевая функция (f)')
-        ax.legend(loc='best', ncol=2)
+        plt.plot(x, y, 'o', label='Точки испытаний')
+        plt.plot(x0, y0, 'ro', label='Текущий минимум')
+        plt.plot(xs, F(xs), label='Миноранта (F)')
+        plt.plot(xs, f.eval(xs), label='Целевая функция (f)')
+        plt.legend(loc='best', ncol=2)
+        plt.savefig(os.path.join(statistics.algo_path(ALGO_NAME, i+1), 'final'))
+        plt.close()
 
-        dir = os.path.dirname(save_file)
-        if not os.path.exists(dir):
-            os.mkdir(dir)
+        results.append(Result(points, counter, x0, y0))
 
-        fig.savefig(save_file)
-        plt.close(fig)
-
-    return Result(points, counter, x0, y0)
+    return results

@@ -5,6 +5,8 @@ from scipy.interpolate import CubicSpline
 import os
 from Result import Result
 
+ALGO_NAME = "mishin_local_speed"
+
 def lipschitz_estimate(spline, points):
     r = 1.1
     eps = 10E-6
@@ -27,20 +29,20 @@ def lipschitz_estimate(spline, points):
         H.append(max(eps, lamb, gamma))
 
     mu = np.repeat([r*h for h in H], 2)
-    #D = spline.derivative()
-
-    #vel = np.array([D(x) for x in spline.x])
-    #vel = np.repeat(vel, 2)[1:-1]
-    #vel = np.array([vel_map(v if i%2 != 0 else -v) for i, v in enumerate(vel)])
-    #mu *= vel
+    vel = gen_velocities(spline)
+    mu *= vel
 
     return mu
 
-def vel_map2(t):
-    return (2/math.pi)*math.atan(t)+1
+def gen_velocities(spline):
+    D = spline.derivative()
+    vel = np.array([D(x) for x in spline.x])
+    vel = np.repeat(vel, 2)[1:-1]
+    vel = np.array([vel_map(-1*v if i % 2 == 0 else v) for i, v in enumerate(vel)])
+    return vel
 
 def vel_map(t):
-    return 1
+    return (2/math.pi)*math.atan(t)+1
 
 def build_P(spline, points, mu):
     def F(t):

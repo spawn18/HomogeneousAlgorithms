@@ -1,10 +1,13 @@
 import math
+import statistics
+
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.interpolate import CubicSpline
 import os
 from Result import Result
 
+ALGO_NAME = "pochechueva"
 
 def lipschitz_estimate_f(points):
     max = 0
@@ -76,54 +79,64 @@ def lipschitz_estimate_m(spline):
     xspline = spline.x.tolist()
     return max(map(lambda t: math.fabs(D(t)), roots+xspline))
 
-def minimize(f, bounds, count_limit=None, save_file=None):
-    eps = 10E-4 * (bounds[1] - bounds[0])  # Точность
-    points = [(bounds[0], f(bounds[0])), (bounds[1], f(bounds[1]))]  # Точки на которых происходят вычисления
-    diff = bounds[1] - bounds[0]  # длина отрезка
-    counter = 2  # кол-во вычислений функции f
+def minimize(funcs, count_limit=None, save=False):
+    results = list()
 
-    # Пока разность между сгенер. точками x не меньше эпсилона
-    while True:
-        x, y = zip(*points)  # разбиваем на 2 массива, x и y
-        spline = CubicSpline(x, y, bc_type='clamped')  # вычисляем сплайн по точкам
+    for i, f in enumerate(funcs):
+        eps = 10E-4 * (f.bounds[1] - f.bounds[0])  # Точность
+        points = [(f.bounds[0], f.eval(f.bounds[0])), (f.bounds[1], f.eval(f.bounds[1]))]  # Точки на которых происходят вычисления
+        diff = f.bounds[1] - f.bounds[0]  # длина отрезка
+        counter = 2  # кол-во вычислений функции f
 
-        L_f = lipschitz_estimate_f(points)  # аппроксимируем константу липшица кусочно-линейно
-        L_m = lipschitz_estimate_m(spline)  # аппроксимируем константу липшица у сплайна
-        K = L_m+L_f # Считаем К умнож. на множитель
+        # Пока разность между сгенер. точками x не меньше эпсилона
+        while True:
+            x, y = zip(*points)  # разбиваем на 2 массива, x и y
+            spline = CubicSpline(x, y, bc_type='clamped')  # вычисляем сплайн по точкам
 
-        arg = minimize_P(spline, points, 2*K)
+            L_f = lipschitz_estimate_f(points)  # аппроксимируем константу липшица кусочно-линейно
+            L_m = lipschitz_estimate_m(spline)  # аппроксимируем константу липшица у сплайна
+            K = L_m+L_f # Считаем К умнож. на множитель
 
-        x0 = arg
-        y0 = f(arg)
-        counter += 1
+            arg = minimize_P(spline, points, 2*K)
 
-        diff = min([math.fabs(arg-p[0]) for p in points]) # находим точность
+            x0 = arg
+            y0 = f.eval(arg)
+            counter += 1
 
-        if diff < eps:
-            break
-        if count_limit != None:
-            if counter == count_limit:
+            diff = min([math.fabs(arg-p[0]) for p in points]) # находим точность
+
+            if save:
+                P = build_P(spline, 2 * K)
+                xs = np.arange(f.bounds[0], f.bounds[1], 0.0001)
+                plt.plot(x, y, 'o', label='Точки испытаний')
+                plt.plot(x0, y0, 'or', label='Точка следующего испытания')
+                plt.plot(xs, spline(xs), 'blue', label='Интерполянт (m)')
+                plt.plot(xs, np.vectorize(P)(xs), 'red', label='Критерий (P)')
+                plt.plot(xs, f.eval(xs), 'green', label='Целевая функция (f)')
+                plt.legend(loc='best', ncol=2)
+                plt.savefig(os.path.join(statistics.iter_path(ALGO_NAME, i + 1), str(counter-3)))
+                plt.clf()
+
+            if diff < eps:
                 break
+            if count_limit != None:
+                if counter == count_limit:
+                    break
 
-        points.append((arg, f(arg)))  # добавляем новую точку
-        points.sort(key=lambda x: x[0])  # сортируем точки
+            points.append((arg, f.eval(arg)))  # добавляем новую точку
+            points.sort(key=lambda x: x[0])  # сортируем точки
 
-    if save_file is not None:
-        P = build_P(spline, 2*K)
-        xs = np.arange(bounds[0], bounds[1], 0.0001)
-        fig, ax = plt.subplots()
-        ax.plot(x, y, 'o')
-        ax.plot(x0, y0, 'or')
-        ax.plot(xs, spline(xs), 'blue', label='Интерполянт (m)')
-        ax.plot(xs, np.vectorize(P)(xs), 'red', label='Критерий (P)')
-        ax.plot(xs, f(xs), 'green', label='Целевая функция (f)')
-        ax.legend(loc='best', ncol=2)
+        if save:
+            P = build_P(spline, 2*K)
+            xs = np.arange(f.bounds[0], f.bounds[1], 0.0001)
+            plt.plot(x, y, 'o', label='Точки испытаний')
+            plt.plot(x0, y0, 'or', label='Точка следующего испытания')
+            plt.plot(xs, spline(xs), 'blue', label='Интерполянт (m)')
+            plt.plot(xs, np.vectorize(P)(xs), 'red', label='Критерий (P)')
+            plt.plot(xs, f.eval(xs), 'green', label='Целевая функция (f)')
+            plt.legend(loc='best', ncol=2)
+            plt.savefig(os.path.join(statistics.algo_path(ALGO_NAME, i + 1), 'final'))
+            plt.close()
 
-        dir = os.path.dirname(save_file)
-        if not os.path.exists(dir):
-            os.mkdir(dir)
-
-        fig.savefig(save_file)
-        plt.close(fig)
-
-    return Result(points, counter, x0, y0)
+        results.append(Result(points, counter, x0, y0))
+    return results

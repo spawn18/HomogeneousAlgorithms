@@ -1,55 +1,38 @@
-import math
-import numpy as np
-import functions
-import matplotlib.pyplot as plt
-import pochechueva
-import algo
-import sergeev
+import pochechueva, sergeev, mishin_local, mishin_local_speed
 import statistics
-
-# Вычисление минимума каждой из функций
-def print_result(i, r, min_y):
-    print("Функция: {} Кол-во: {} x0: {} y0: {} y: {}".format(i, r.count, r.x0, r.y0, min_y))
-
-def save_result(i, r):
-    x,y = zip(*r.points)
-    x = list(x)
-    y = list(y)
-
-    xs = np.arange(f.a, f.b, 0.0001)
-    fig, ax = plt.subplots()
-    ax.plot(x, y, 'o')
-    ax.plot(xs, np.vectorize(r.F)(xs), label='Миноранта (F)')
-    ax.plot(xs, np.vectorize(r.f)(xs), label='Целевая функция (f)')
-    ax.legend(loc='best', ncol=2)
-    fig.savefig('f'+str(i))
-    fig.clf()
+import functions
 
 algorithms = [
     {
         "name": "pochechueva",
         "function": pochechueva.minimize,
-        "count": [1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4]
+        "results": []
     },
     {
         "name": "sergeev",
         "function": sergeev.minimize,
-        "count": [1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4]
+        "results": []
     },
     {
-        "name": "algo",
-        "function": algo.minimize,
-        "count": [1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4]
+        "name": "mishin_local",
+        "function": mishin_local.minimize,
+        "results": []
+    },
+    {
+        "name": "mishin_local_speed",
+        "function": mishin_local_speed.minimize,
+        "results": []
     }
 ]
 
-#for a in algorithms:
-#    for i, f in enumerate(functions.funcs):
-#        r = a["function"](f.eval, (f.a, f.b), None, 'func'+str(i+1)+'/'+a['name'])
-#        a["count"].append(r.count)
-#        print_result(i+1, r, f.min_y)
+statistics.create_dir_tree(functions.funcs, algorithms)
 
-statistics.plot_comparison(algorithms)
+for alg in algorithms[0:1]:
+    minimize = alg["function"]
+    results = minimize(functions.funcs[0:1], 5, True)
+    statistics.print_results(functions.funcs, results)
+
+#statistics.plot_comparison(algorithms)
 
 
 
