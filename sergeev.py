@@ -3,7 +3,7 @@ import os
 import numpy as np
 from matplotlib import pyplot as plt
 import statistics
-from Result import Result
+from result import Result
 
 ALGO_NAME = "sergeev"
 
@@ -34,7 +34,7 @@ def lipschitz_estimate(points):
 def build_F(points, mu):
     def F(t):
         conditions = [(points[i-1][0] <= t) & (t < points[i][0]) for i in range(1, len(points))]
-        funcs = [np.vectorize(lambda x, i=j: np.array([points[i-1][1]-mu[i-1]*(x-points[i-1][0]), points[i][1]+mu[i-1]*(x-points[i][0])]).max()) for j in range(1, len(points))]
+        funcs = [lambda x, i=j: np.max([points[i-1][1]-mu[i-1]*(x-points[i-1][0]), points[i][1]+mu[i-1]*(x-points[i][0])], axis=0) for j in range(1, len(points))]
         return np.piecewise(t, conditions, funcs)
     return F
 
@@ -46,8 +46,9 @@ def min_F(points, mu):
     arg = min(p, key=lambda p: p[1])[0]
     return arg, t
 
-def minimize(funcs, count_limit=None, save=False):
+def minimize(funcs, count_limit=None, save_iter=False):
     results = list()
+    total = len(funcs)
 
     for i, f in enumerate(funcs):
         eps = 10E-4 * (f.bounds[1] - f.bounds[0])  # Точность
@@ -71,7 +72,7 @@ def minimize(funcs, count_limit=None, save=False):
                 if counter == count_limit:
                     break
 
-            if save:
+            if save_iter:
                 x, y = zip(*points)
                 F = build_F(points, mu)
                 xs = np.arange(f.bounds[0], f.bounds[1], 0.0001)
@@ -82,7 +83,7 @@ def minimize(funcs, count_limit=None, save=False):
                 plt.legend(loc='best', ncol=2)
 
                 plt.savefig(os.path.join(statistics.iter_path(ALGO_NAME, i+1), str(counter-2)))
-                plt.clf()
+                plt.cla()
 
             points.append((arg, f.eval(arg)))  # добавляем новую точку
             points.sort(key=lambda x: x[0])  # сортируем точки
@@ -90,14 +91,16 @@ def minimize(funcs, count_limit=None, save=False):
 
         x, y = zip(*points)
         F = build_F(points, mu)
+        xs = np.arange(f.bounds[0], f.bounds[1], 0.0001)
         plt.plot(x, y, 'o', label='Точки испытаний')
         plt.plot(x0, y0, 'ro', label='Текущий минимум')
-        plt.plot(xs, F(xs), label='Миноранта (F)')
-        plt.plot(xs, f.eval(xs), label='Целевая функция (f)')
-        plt.legend(loc='best', ncol=2)
-        plt.savefig(os.path.join(statistics.algo_path(ALGO_NAME, i+1), 'final'))
+        plt.plot(xs, F(xs), 'red', label='Миноранта (F)')
+        plt.plot(xs, f.eval(xs), 'black', label='Целевая функция (f)')
+        plt.legend(loc='outside best', ncol=2)
+        plt.savefig(os.path.join(statistics.algo_path(ALGO_NAME, i+1), 'final'),)
         plt.close()
 
         results.append(Result(points, counter, x0, y0))
+        statistics.print_current_func(i, total)
 
     return results

@@ -1,6 +1,7 @@
 import pochechueva, sergeev, mishin_local, mishin_local_speed
 import statistics
 import functions
+import cProfile
 
 algorithms = [
     {
@@ -27,9 +28,9 @@ algorithms = [
 
 statistics.create_dir_tree(functions.funcs, algorithms)
 
-for alg in algorithms[0:1]:
+for alg in algorithms[1:2]:
     minimize = alg["function"]
-    results = minimize(functions.funcs[0:1], 5, True)
+    results = minimize(functions.funcs, count_limit=None, save_iter=False)
     statistics.print_results(functions.funcs, results)
 
 #statistics.plot_comparison(algorithms)
