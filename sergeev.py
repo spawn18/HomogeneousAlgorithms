@@ -46,7 +46,7 @@ def min_F(points, mu):
     arg = min(p, key=lambda p: p[1])[0]
     return arg, t
 
-def minimize(funcs, count_limit=None, save_iter=False):
+def minimize(funcs, count_limit=None):
     results = list()
     total = len(funcs)
 
@@ -71,19 +71,6 @@ def minimize(funcs, count_limit=None, save_iter=False):
             if count_limit != None:
                 if counter == count_limit:
                     break
-
-            if save_iter:
-                x, y = zip(*points)
-                F = build_F(points, mu)
-                xs = np.arange(f.bounds[0], f.bounds[1], 0.0001)
-                plt.plot(x, y, 'o', label='Точки испытаний')
-                plt.plot(x0, y0, 'ro', label='Текущий минимум')
-                plt.plot(xs, F(xs), 'red', label='Миноранта (F)')
-                plt.plot(xs, f.eval(xs), 'black', label='Целевая функция (f)')
-                plt.legend(loc='best', ncol=2)
-
-                plt.savefig(os.path.join(statistics.iter_path(ALGO_NAME, i+1), str(counter-2)))
-                plt.cla()
 
             points.append((arg, f.eval(arg)))  # добавляем новую точку
             points.sort(key=lambda x: x[0])  # сортируем точки

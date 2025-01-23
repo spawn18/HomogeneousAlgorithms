@@ -80,7 +80,7 @@ def lipschitz_estimate_m(spline):
     xspline = spline.x.tolist()
     return max(map(lambda t: math.fabs(D(t)), roots+xspline))
 
-def minimize(funcs, count_limit=None, save_final=True, save_iter=False):
+def minimize(funcs, count_limit=None, save_final=True):
     results = list()
 
     for i, f in enumerate(funcs):
@@ -105,18 +105,6 @@ def minimize(funcs, count_limit=None, save_final=True, save_iter=False):
             counter += 1
 
             diff = min([math.fabs(arg-p[0]) for p in points]) # находим точность
-
-            if save_iter:
-                P = build_P(spline, 2 * K)
-                xs = np.arange(f.bounds[0], f.bounds[1], 0.0001)
-                plt.plot(x, y, 'o', label='Точки испытаний')
-                plt.plot(x0, y0, 'or', label='Точка следующего испытания')
-                plt.plot(xs, spline(xs), 'blue', label='Интерполянт (m)')
-                plt.plot(xs, P(xs), 'red', label='Критерий (P)')
-                plt.plot(xs, f.eval(xs), 'green', label='Целевая функция (f)')
-                plt.legend(loc='best', ncol=2)
-                plt.savefig(os.path.join(statistics.iter_path(ALGO_NAME, i + 1), str(counter-3)))
-                plt.clf()
 
             if diff < eps:
                 break

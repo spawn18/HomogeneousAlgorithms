@@ -30,7 +30,7 @@ statistics.create_dir_tree(functions.funcs, algorithms)
 
 for alg in algorithms[1:2]:
     minimize = alg["function"]
-    results = minimize(functions.funcs, count_limit=None, save_iter=False)
+    results = minimize(functions.funcs, count_limit=None)
     statistics.print_results(functions.funcs, results)
 
 #statistics.plot_comparison(algorithms)
