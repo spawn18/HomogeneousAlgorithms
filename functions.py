@@ -147,7 +147,7 @@ class f16:
 
 class f17:
     bounds = [-4.0, 4.0]
-    min_x = [-3.0]
+    min_x = [-3.0, 3.0]
     min_y = 7.0
 
     @staticmethod
@@ -156,8 +156,8 @@ class f17:
 
 class f18:
     bounds = [0.0, 6.0]
-    min_x = [2]
-    min_y = 0
+    min_x = [2.0]
+    min_y = 0.0
 
     @staticmethod
     def eval(x):
@@ -165,7 +165,7 @@ class f18:
 
 class f19:
     bounds = [0.0, 0.65]
-    min_x = [0]
+    min_x = [0.0]
     min_y = -1.0
 
     @staticmethod

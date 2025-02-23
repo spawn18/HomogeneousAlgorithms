@@ -1,3 +1,5 @@
+import csv
+import math
 import os
 
 import numpy as np
@@ -6,9 +8,6 @@ from matplotlib import pyplot as plt
 FUNCS_DIR = "func"
 COMPARISON_DIR = "comp"
 ITERS_DIR = "iters"
-
-def print_current_func(i, total):
-    print("{}/{}".format(i, total))
 
 def iter_path(algo_name, i):
     return os.path.join(FUNCS_DIR+str(i), algo_name, ITERS_DIR)
@@ -21,23 +20,26 @@ def print_results(funcs, results):
     for i,r in enumerate(results):
         print("Функция: {} Кол-во: {} x0: {} y0: {} y: {}".format(i+1, r.count, r.x0, r.y0, funcs[i].min_y))
 
-def plot_comparison(algorithms):
-    names = list()
-    x_axis = np.arange(20)
 
-    for i in range(0, len(algorithms)):
-        names.append(algorithms[i]["name"])
-        offset = 0.2*(i-len(algorithms)//2)
-        plt.bar(x_axis+offset, algorithms[i]["count"], 0.2, align='edge', label=algorithms[i]["name"])
+def check_convergence(x_mins, xks, eps):
+    for x in x_mins:
+        for xk in xks:
+            if math.fabs(xk - x) < eps:
+                return True
+    return False
 
-    plt.xticks(x_axis, [str(i) for i in range(1, 21)])
-    plt.gca().yaxis.get_major_locator().set_params(integer=True)
-    plt.gca().yaxis.grid()
-    plt.xlabel("Функции")
-    plt.ylabel("Кол-во вычислений")
-    plt.title("Сравнение алгоритмов")
-    plt.legend()
-    plt.savefig("comparison")
+def write_comparison(names, results, functions):
+    n = len(results)
+    m = len(functions)
+
+    with open('comparison.csv', 'w') as file:
+        wr = csv.writer(file, quoting=csv.QUOTE_ALL)
+
+        wr.writerow(['']+names)
+        for i in range(0, m):
+            wr.writerow([str(i+1)]+[str(res[i].count) if res[i].success else '-' for res in results])
+        wr.writerow(['Среднее']+[str(np.average([r.count for r in res])) for res in results])
+
 
 def create_dir_tree(funcs, algorithms):
     for i in range(0, len(funcs)):
@@ -49,7 +51,3 @@ def create_dir_tree(funcs, algorithms):
             alg_dir = os.path.join(func_dir, alg["name"])
             if not os.path.exists(alg_dir):
                 os.mkdir(alg_dir)
-
-            iter_dir = os.path.join(alg_dir, ITERS_DIR)
-            if not os.path.exists(iter_dir):
-                os.mkdir(iter_dir)

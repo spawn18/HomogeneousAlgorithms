@@ -4,61 +4,44 @@ import statistics
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.interpolate import CubicSpline
+import os
 from result import Result
 
-ALGO_NAME = "mishin_local_speed"
+ALGO_NAME = "mishin_speed"
 
-# sigmoid function
-def grad1(x):
-    if x < 0:
-        return - 0.5 / (1 + math.exp(0.5*x)) + 1.25
-    return 0.5 / (1 + math.exp(-0.5*x))+0.75
+def lipschitz_estimate(spline, points):
+    D = spline.derivative()
+    roots = D.derivative().roots(discontinuity=False)
+    roots = roots[np.isfinite(roots)].tolist()
+    xspline = spline.x.tolist()
+    L_m = max(map(lambda t: math.fabs(D(t)), roots+xspline))
 
-# arctan function
-def grad2(x):
-    return (0.5/math.pi)*math.atan((math.pi/2)*x)+1
+    L_f = 0
+    for i in range(0, len(points)):
+        for j in range(0, len(points)):
+            if i != j:
+                L = math.fabs(points[i][1] - points[j][1]) / math.fabs(points[i][0] - points[j][0])
+                if L > L_f:
+                    L_f = L
 
-# piecewise linear function
-def grad3(x):
-    if -2.5 <= x <= 2.5:
-        return (1/10)*x+1
-    elif x < -2.5:
-        return 0.75
-    else:
-        return 1.25
+    K = L_m+L_f
 
-def lipschitz_estimate(spline, points, grad):
-    eps = 10E-6
-    lamb_max = max([math.fabs(points[i][1]-points[i-1][1])/(points[i][0]-points[i-1][0]) for i in range(1, len(points))])
-    x_max = max([points[i][0]-points[i-1][0] for i in range(1, len(points))])
-
-    def build_list(i, n):
-        if n == 1: return [i]
-        else:
-            if i == 1: return [i, i+1]
-            elif i == n: return [i, i-1]
-            else: return [i-1, i, i+1]
-
-    n = len(points)
-
-    H = list()
-    for i in range(1, n):
-        lamb = max([math.fabs(points[j][1]-points[j-1][1])/(points[j][0]-points[j-1][0]) for j in build_list(i, n-1)])
-        gamma = (lamb_max/x_max)*(points[i][0]-points[i-1][0])
-        H.append(max(eps, lamb, gamma))
-
-    mu = np.repeat([h for h in H], 2)
-    vel = gen_velocities(spline, grad)
+    n = len(points)-1
+    mu = np.array([K]*n*2)
+    vel = gen_velocities(spline)
     mu *= vel
 
     return mu
 
-def gen_velocities(spline, grad):
+def gen_velocities(spline):
     D = spline.derivative()
     vel = np.array([D(x) for x in spline.x])
     vel = np.repeat(vel, 2)[1:-1]
-    vel = np.array([grad(-1*v if i % 2 == 0 else v) for i, v in enumerate(vel)])
+    vel = np.array([vel_map(-1*v if i % 2 == 0 else v) for i, v in enumerate(vel)])
     return vel
+
+def vel_map(t):
+    return 0.5*(2/math.pi)*math.atan(t)+1
 
 def build_P(spline, points, mu):
     def F(t):
@@ -116,7 +99,7 @@ def minimize_P(spline, points, mu):
     return arg
 
 
-def minimize(funcs, grad, count_limit=None):
+def minimize(funcs, count_limit=None):
     results = list()
 
     for i, f in enumerate(funcs):
@@ -130,7 +113,7 @@ def minimize(funcs, grad, count_limit=None):
             x, y = zip(*points)  # разбиваем на 2 массива, x и y
             spline = CubicSpline(x, y, bc_type='clamped')  # вычисляем сплайн по точкам
 
-            mu = lipschitz_estimate(spline, points, grad)
+            mu = lipschitz_estimate(spline, points)
             arg = minimize_P(spline, points, mu)
 
             x0 = arg
@@ -164,7 +147,3 @@ def minimize(funcs, grad, count_limit=None):
         success = statistics.check_convergence(f.min_x, x, eps)
         results.append(Result(points, counter, x0, y0, f.min_y, success))
     return results
-
-minimize_grad1 = lambda x: minimize(x, grad1)
-minimize_grad2 = lambda x: minimize(x, grad2)
-minimize_grad3 = lambda x: minimize(x, grad3)

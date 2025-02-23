@@ -1,39 +1,23 @@
+import mishin_localcustom_speed
+import mishin_speed
 import pochechueva, sergeev, mishin_local, mishin_local_speed
 import statistics
 import functions
-import cProfile
 
-algorithms = [
-    {
-        "name": "pochechueva",
-        "function": pochechueva.minimize,
-        "results": []
-    },
-    {
-        "name": "sergeev",
-        "function": sergeev.minimize,
-        "results": []
-    },
-    {
-        "name": "mishin_local",
-        "function": mishin_local.minimize,
-        "results": []
-    },
-    {
-        "name": "mishin_local_speed",
-        "function": mishin_local_speed.minimize,
-        "results": []
-    }
-]
+func_pick = functions.funcs
 
-statistics.create_dir_tree(functions.funcs, algorithms)
+#names = ['l','s','ls1','ls2','ls3']
+names = ['l','ls2','lcs']
 
-for alg in algorithms[1:2]:
-    minimize = alg["function"]
-    results = minimize(functions.funcs, count_limit=None)
-    statistics.print_results(functions.funcs, results)
+results = list()
+results.append(mishin_local.minimize(func_pick))
+#results.append(mishin_speed.minimize(func_pick))
+results.append(mishin_local_speed.minimize_grad1(func_pick))
+#results.append(mishin_local_speed.minimize_grad2(func_pick))
+#results.append(mishin_local_speed.minimize_grad3(func_pick))
+results.append(mishin_localcustom_speed.minimize(func_pick))
 
-#statistics.plot_comparison(algorithms)
+statistics.write_comparison(names, results, func_pick)
 
 
 

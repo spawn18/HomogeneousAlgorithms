@@ -10,7 +10,7 @@ from result import Result
 ALGO_NAME = "mishin_local"
 
 def lipschitz_estimate(spline, points):
-    r = 1.1
+    r = 1.3
     eps = 10E-6
     lamb_max = max([math.fabs(points[i][1]-points[i-1][1])/(points[i][0]-points[i-1][0]) for i in range(1, len(points))])
     x_max = max([points[i][0]-points[i-1][0] for i in range(1, len(points))])
@@ -121,6 +121,7 @@ def minimize(funcs, count_limit=None):
             points.append((arg, f.eval(arg)))  # добавляем новую точку
             points.sort(key=lambda x: x[0])  # сортируем точки
 
+        """
         P = build_P(spline, points, mu)
         xs = np.arange(f.bounds[0], f.bounds[1], 0.0001)
         plt.plot(x, y, 'o', label='Точки испытаний')
@@ -131,6 +132,8 @@ def minimize(funcs, count_limit=None):
         plt.legend(loc='best', ncol=2)
         plt.savefig(os.path.join(statistics.algo_path(ALGO_NAME, i + 1), 'final'))
         plt.close()
+        """
 
-        results.append(Result(points, counter, x0, y0))
+        success = statistics.check_convergence(f.min_x, x, eps)
+        results.append(Result(points, counter, x0, y0, f.min_y, success))
     return results

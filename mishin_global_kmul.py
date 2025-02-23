@@ -8,6 +8,8 @@ import os
 from result import Result
 
 ALGO_NAME = "pochechueva"
+delta = 10E-3
+MUL = 1.4
 
 def lipschitz_estimate_f(points):
     max = 0
@@ -84,6 +86,7 @@ def minimize(funcs, count_limit=None, save_final=True):
     results = list()
 
     for i, f in enumerate(funcs):
+        q = 0
         eps = 10E-4 * (f.bounds[1] - f.bounds[0])  # Точность
         points = [(f.bounds[0], f.eval(f.bounds[0])), (f.bounds[1], f.eval(f.bounds[1]))]  # Точки на которых происходят вычисления
         diff = f.bounds[1] - f.bounds[0]  # длина отрезка
@@ -96,7 +99,7 @@ def minimize(funcs, count_limit=None, save_final=True):
 
             L_f = lipschitz_estimate_f(points)  # аппроксимируем константу липшица кусочно-линейно
             L_m = lipschitz_estimate_m(spline)  # аппроксимируем константу липшица у сплайна
-            K = 30 # Считаем К умнож. на множитель
+            K = math.pow(MUL, q)*(L_m+L_f+delta) # Считаем К умнож. на множитель
 
             arg = minimize_P(spline, points, 2*K)
 
@@ -107,6 +110,7 @@ def minimize(funcs, count_limit=None, save_final=True):
             diff = min([math.fabs(arg-p[0]) for p in points]) # находим точность
 
             if diff < eps:
+                q += 1
                 break
             if count_limit != None:
                 if counter == count_limit:
@@ -127,10 +131,5 @@ def minimize(funcs, count_limit=None, save_final=True):
             plt.savefig(os.path.join(statistics.algo_path(ALGO_NAME, i + 1), 'final'))
             plt.close()
 
-        success = False
-        for x in f.min_x:
-            if math.fabs(x0 - x) < eps:
-                success = True
-
-        results.append(Result(points, counter, x0, y0, f.min_y, success))
+        results.append(Result(points, counter, x0, y0))
     return results

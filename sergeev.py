@@ -8,7 +8,7 @@ from result import Result
 ALGO_NAME = "sergeev"
 
 def lipschitz_estimate(points):
-    r = 1.1
+    r = 5
     eps = 10E-6
     lamb_max = max([math.fabs(points[i][1]-points[i-1][1])/(points[i][0]-points[i-1][0]) for i in range(1, len(points))])
     x_max = max([points[i][0]-points[i-1][0] for i in range(1, len(points))])
@@ -83,11 +83,12 @@ def minimize(funcs, count_limit=None):
         plt.plot(x0, y0, 'ro', label='Текущий минимум')
         plt.plot(xs, F(xs), 'red', label='Миноранта (F)')
         plt.plot(xs, f.eval(xs), 'black', label='Целевая функция (f)')
-        plt.legend(loc='outside best', ncol=2)
+        plt.legend(loc='best', ncol=2)
         plt.savefig(os.path.join(statistics.algo_path(ALGO_NAME, i+1), 'final'),)
         plt.close()
 
-        results.append(Result(points, counter, x0, y0))
-        statistics.print_current_func(i, total)
+
+
+        results.append(Result(points, counter, x0, y0, f.min_y, success))
 
     return results
