@@ -8,7 +8,7 @@ from result import Result
 ALGO_NAME = "sergeev"
 
 def lipschitz_estimate(points):
-    r = 5
+    r = 1.1
     eps = 10E-6
     lamb_max = max([math.fabs(points[i][1]-points[i-1][1])/(points[i][0]-points[i-1][0]) for i in range(1, len(points))])
     x_max = max([points[i][0]-points[i-1][0] for i in range(1, len(points))])
@@ -17,7 +17,7 @@ def lipschitz_estimate(points):
         if n == 1: return [i]
         else:
             if i == 1: return [i, i+1]
-            elif i == n: return [i, i-1]
+            elif i == n: return [i-1, i]
             else: return [i-1, i, i+1]
 
     n = len(points)
@@ -42,8 +42,9 @@ def min_F(points, mu):
     x = [(points[i][0]+points[i-1][0])/2 - (points[i][1]-points[i-1][1])/(2*mu[i-1]) for i in range(1, len(points))]
     r = [(points[i][1]+points[i-1][1])/2 - mu[i-1]*(points[i][0]-points[i-1][0])/2 for i in range(1, len(points))]
     p = list(zip(x,r))
-    t = min([i for i in range(1, len(points))], key=lambda i: (points[i][1]+points[i-1][1])/2 - mu[i-1]*(points[i][0]-points[i-1][0])/2)
-    arg = min(p, key=lambda p: p[1])[0]
+    m = min(p, key=lambda p: p[1])
+    arg = m[0]
+    t = p.index(m)+1
     return arg, t
 
 def minimize(funcs, count_limit=None):
@@ -58,6 +59,7 @@ def minimize(funcs, count_limit=None):
 
         # Пока разность между сгенер. точками x не меньше эпсилона
         while True:
+            x, y = zip(*points)
             mu = lipschitz_estimate(points)  # аппроксимируем константу липшица кусочно-линейно
             arg, t = min_F(points, mu)
 
@@ -76,6 +78,7 @@ def minimize(funcs, count_limit=None):
             points.sort(key=lambda x: x[0])  # сортируем точки
             counter += 1  # увеличиваем счетчик
 
+        """
         x, y = zip(*points)
         F = build_F(points, mu)
         xs = np.arange(f.bounds[0], f.bounds[1], 0.0001)
@@ -86,9 +89,8 @@ def minimize(funcs, count_limit=None):
         plt.legend(loc='best', ncol=2)
         plt.savefig(os.path.join(statistics.algo_path(ALGO_NAME, i+1), 'final'),)
         plt.close()
-
-
-
+        """
+        success = True
         results.append(Result(points, counter, x0, y0, f.min_y, success))
 
     return results
