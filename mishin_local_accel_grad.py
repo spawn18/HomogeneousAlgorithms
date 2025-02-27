@@ -8,30 +8,9 @@ from result import Result
 
 ALGO_NAME = "mishin_local_parab_grad_best"
 
-# arctan function
-def grad_smoother(x, a, b):
-    if -b*a <= x <= b*a:
-        return (1/a)*x+1
-    elif x < -b*a:
-        return -b+1
-    else:
-        return b+1
-
-grad_smoother1 = lambda x: grad_smoother(x, 10, 0.5)
-
-def accel_smoother(x, a, b):
-    if 0 <= x <= b * a:
-        return (1 / a) * x
-    elif x > b*a:
-        return b
-    else:
-        return 0
-
-accel_smoother1 = lambda x: accel_smoother(x, a=10, b=1)
-
 
 def lipschitz_estimate(points):
-    r = 1.4
+    r = 1.1
     eps = 10E-6
     lamb_max = max([math.fabs(points[i][1] - points[i - 1][1]) / (points[i][0] - points[i - 1][0]) for i in range(1, len(points))])
     x_max = max([points[i][0] - points[i - 1][0] for i in range(1, len(points))])
@@ -58,8 +37,6 @@ def lipschitz_estimate(points):
 
     mu = np.repeat([r*h for h in H], 2)
     return mu
-
-
 
 def grad_accel_boost(spline, points, mu, grad_smoother, accel_smoother):
     D = spline.derivative()
@@ -115,13 +92,21 @@ def minimize_cubic_piece(c, offset, bounds):
 def minimize_P(spline, points, mu, acc):
     mins = list()
     for i in range(1, len(spline.x)):
-        x_intersect = (mu[2 * (i - 1)] * points[i - 1][0] + mu[2 * (i - 1) + 1] * points[i][0]) / (mu[2 * (i - 1)] + mu[2 * (i - 1) + 1])
-        int1 = (points[i - 1][0], x_intersect)
-        int2 = (x_intersect, points[i][0])
+        k1 = mu[2*(i-1)]
+        k2 = mu[2*(i-1)+1]
 
         delta = points[i][0]-points[i-1][0]
         q1 = acc[2*(i-1)]/delta
         q2 = acc[2*(i-1)+1]/delta
+
+        a = q1-q2
+        b = -2*q1*points[i-1][0]+2*q2*points[i][0]+k1+k2
+        c = q1*points[i-1][0]**2-q2*points[i][0]**2-k2*points[i][0]-k1*points[i-1][0]
+        roots = np.roots([a,b,c])
+        x_intersect = list(filter(lambda x: points[i-1][0] <= x <= points[i][0], roots))[0]
+
+        int1 = (points[i - 1][0], x_intersect)
+        int2 = (x_intersect, points[i][0])
 
         c1 = convert_coefs(np.array([0, -q1, -mu[2 * (i - 1)], 0]), points[i - 1][0], points[i - 1][0])
         c2 = convert_coefs(np.array([0, -q2, mu[2 * (i - 1) + 1], 0]), points[i][0], points[i - 1][0])
@@ -132,19 +117,18 @@ def minimize_P(spline, points, mu, acc):
         c1_min = minimize_cubic_piece(c1, points[i - 1][0], int1)
         c2_min = minimize_cubic_piece(c2, points[i - 1][0], int2)
 
-        mins.append(min([c1_min,c2_min], key=lambda x: x[1]))
+        mins.append(min([c1_min, c2_min], key=lambda x: x[1]))
 
     arg = min(mins, key=lambda x: x[1])[0]
     return arg
 
 
-def minimize(funcs, grad_smoother=grad_smoother1, accel_smoother=accel_smoother1):
+def minimize(funcs, grad_smoother, accel_smoother):
     results = list()
 
     for i, f in enumerate(funcs):
         eps = 10E-4 * (f.bounds[1] - f.bounds[0])  # Точность
         points = [(f.bounds[0], f.eval(f.bounds[0])), (f.bounds[1], f.eval(f.bounds[1]))]  # Точки на которых происходят вычисления
-        diff = f.bounds[1] - f.bounds[0]  # длина отрезка
         counter = 2  # кол-во вычислений функции f
 
         # Пока разность между сгенер. точками x не меньше эпсилона

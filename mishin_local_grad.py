@@ -12,21 +12,8 @@ ALGO_NAME = "mishin_local_grad"
 
 # sigmoid function
 
-# piecewise linear function
-def grad_smoother(x, a, b):
-    if -b*a <= x <= b*a:
-        return (1/a)*x+1
-    elif x < -b*a:
-        return -b+1
-    else:
-        return b+1
-
-grad_smoother1 = lambda x: grad_smoother(x, 10, 0.6)
-grad_smoother2 = lambda x: grad_smoother(x, 10, 0.5)
-grad_smoother3 = lambda x: grad_smoother(x, 10, 0.4)
-
 def lipschitz_estimate(points):
-    r = 1.4
+    r = 1.1
     eps = 10E-6
     lamb_max = max([math.fabs(points[i][1]-points[i-1][1])/(points[i][0]-points[i-1][0]) for i in range(1, len(points))])
     x_max = max([points[i][0]-points[i-1][0] for i in range(1, len(points))])
@@ -98,7 +85,6 @@ def minimize_cubic_piece(c, offset, bounds):
 def minimize_P(spline, points, mu):
     mins = list()
     for i in range(1, len(spline.x)):
-
         x_intersect = (mu[2*(i-1)]*points[i-1][0]+mu[2*(i-1)+1]*points[i][0])/(mu[2*(i-1)] + mu[2*(i-1)+1])
         int1 = (points[i-1][0], x_intersect)
         int2 = (x_intersect, points[i][0])
@@ -117,13 +103,12 @@ def minimize_P(spline, points, mu):
     arg = min(mins, key=lambda x: x[1])[0]
     return arg
 
-def minimize(funcs, grad_smoother=grad_smoother2):
+def minimize(funcs, grad_smoother):
     results = list()
 
     for i, f in enumerate(funcs):
         eps = 10E-4 * (f.bounds[1] - f.bounds[0])  # Точность
         points = [(f.bounds[0], f.eval(f.bounds[0])), (f.bounds[1], f.eval(f.bounds[1]))]  # Точки на которых происходят вычисления
-        diff = f.bounds[1] - f.bounds[0]  # длина отрезка
         counter = 2  # кол-во вычислений функции f
 
         # Пока разность между сгенер. точками x не меньше эпсилона
@@ -164,7 +149,3 @@ def minimize(funcs, grad_smoother=grad_smoother2):
         results.append(Result(points, counter, x0, y0, f.min_y, success))
 
     return results
-
-minimize_grad1 = lambda x: minimize(x, grad_smoother1)
-minimize_grad2 = lambda x: minimize(x, grad_smoother2)
-minimize_grad3 = lambda x: minimize(x, grad_smoother3)
