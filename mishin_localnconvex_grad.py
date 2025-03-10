@@ -1,38 +1,56 @@
 import math
-import os
-
-from matplotlib import pyplot as plt
-
 import statistics
 
 import numpy as np
+from matplotlib import pyplot as plt
 from scipy.interpolate import CubicSpline
 from result import Result
 
-ALGO_NAME = "mishin_local"
+ALGO_NAME = "mishin_local_parab_grad_best"
 
-def lipschitz_estimate(points):
-    r = 1.1
-    eps = 10E-6
-    lamb_max = max([math.fabs(points[i][1]-points[i-1][1])/(points[i][0]-points[i-1][0]) for i in range(1, len(points))])
-    x_max = max([points[i][0]-points[i-1][0] for i in range(1, len(points))])
+KSI = 10E-6
+
+def lipschitz_estimate(points, q, r):
+    mul = r
+    lamb_max = max([math.fabs(points[i][1] - points[i - 1][1]) / (points[i][0] - points[i - 1][0]) for i in range(1, len(points))])
+    x_max = max([points[i][0] - points[i - 1][0] for i in range(1, len(points))])
 
     def build_list(i, n):
-        if n == 1: return [i]
+        if n == 1:
+            return [i]
         else:
-            if i == 1: return [i, i+1]
-            elif i == n: return [i, i-1]
-            else: return [i-1, i, i+1]
+            if i == 1:
+                return [i, i+1]
+            elif i == n:
+                return [i-1, i]
+            else:
+                return [i - 1, i, i + 1]
 
     n = len(points)
 
     H = list()
     for i in range(1, n):
-        lamb = max([math.fabs(points[j][1]-points[j-1][1])/(points[j][0]-points[j-1][0]) for j in build_list(i, n-1)])
-        gamma = lamb_max*(points[i][0]-points[i-1][0])/x_max
-        H.append(max(eps, lamb, gamma))
+        lamb = max([math.fabs(points[j][1] - points[j - 1][1]) / (points[j][0] - points[j - 1][0]) for j in
+                    build_list(i, n - 1)])
+        delta = (points[i][0] - points[i - 1][0]) / x_max
+        H.append(max(KSI, delta**q*lamb_max + (1-delta**q)*lamb))
 
-    mu = np.array([r*h for h in H])
+    mu = np.repeat([mul*h for h in H], 2)
+    return mu
+
+def grad_boost(spline, points, mu, grad_smoother):
+    D = spline.derivative()
+
+    vel = np.array([D(x) for x in spline.x])
+    vel = np.repeat(vel, 2)[1:-1]
+    vel = np.array([grad_smoother(-1 * v if i % 2 == 0 else v) for i, v in enumerate(vel)])
+
+    n = len(points)
+
+    for i in range(1, n):
+        mu[2 * (i - 1)] = max([mu[2 * (i - 1)]*vel[2 * (i - 1)], KSI])
+        mu[2 * (i - 1) + 1] = max([mu[2 * (i - 1) + 1]*vel[2 * (i - 1) + 1], KSI])
+
     return mu
 
 def build_P(spline, points, mu):
@@ -52,7 +70,7 @@ def convert_coefs(c, off1, off2):
 
 def minimize_cubic_piece(c, offset, bounds):
     roots = np.roots(np.polyder(c))
-    roots = roots[np.isreal(roots)]+offset
+    roots = roots[np.isreal(roots)] + offset
     roots = roots[np.logical_and(bounds[0] <= roots, roots <= bounds[1])].tolist()
 
     def eval(x):
@@ -66,13 +84,13 @@ def minimize_cubic_piece(c, offset, bounds):
 def minimize_P(spline, points, mu):
     mins = list()
     for i in range(1, len(spline.x)):
-        x_intersect = (points[i-1][0]+points[i][0])/2
-
-        int1 = (points[i-1][0], x_intersect)
+        x_intersect = (mu[2 * (i - 1)] * points[i - 1][0] + mu[2 * (i - 1) + 1] * points[i][0]) / (
+                    mu[2 * (i - 1)] + mu[2 * (i - 1) + 1])
+        int1 = (points[i - 1][0], x_intersect)
         int2 = (x_intersect, points[i][0])
 
-        c1 = convert_coefs(np.array([0, 0, -mu[i-1], 0]), points[i-1][0], points[i-1][0])
-        c2 = convert_coefs(np.array([0, 0, mu[i-1], 0]), points[i][0], points[i-1][0])
+        c1 = convert_coefs(np.array([0, 0, -mu[2 * (i - 1)], 0]), points[i - 1][0], points[i - 1][0])
+        c2 = convert_coefs(np.array([0, 0, mu[2 * (i - 1) + 1], 0]), points[i][0], points[i - 1][0])
 
         c1 = spline.c[:, i - 1] + c1
         c2 = spline.c[:, i - 1] + c2
@@ -86,7 +104,7 @@ def minimize_P(spline, points, mu):
     return arg
 
 
-def minimize(funcs):
+def minimize(funcs, grad_smoother, exponent=6.5, r=1.1):
     results = list()
 
     for i, f in enumerate(funcs):
@@ -99,7 +117,8 @@ def minimize(funcs):
             x, y = zip(*points)  # разбиваем на 2 массива, x и y
             spline = CubicSpline(x, y, bc_type='clamped')  # вычисляем сплайн по точкам
 
-            mu = lipschitz_estimate(points)
+            mu = lipschitz_estimate(points, exponent, r)
+            mu = grad_boost(spline, points, mu, grad_smoother)
             arg = minimize_P(spline, points, mu)
 
             x0 = arg
@@ -129,5 +148,4 @@ def minimize(funcs):
 
         success = statistics.check_convergence(f.min_x, x, 2*eps)
         results.append(Result(points, counter, x0, y0, f.min_y, success))
-
     return results

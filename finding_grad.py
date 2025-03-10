@@ -24,7 +24,7 @@ def average(a, b):
 
 average_vec = np.vectorize(average)
 
-a = np.array([0.01, 0.05, 0.1, 0.25, 0.5, 1, 5, 10, 25, 50])
+a = np.array([0.01, 0.025, 0.05, 0.1, 0.2, 0.3, 0.5, 0.66, 0.75, 0.85, 1])
 b = np.array([0, 0.01, 0.025, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
 
 A,B = np.meshgrid(a, b)
@@ -34,7 +34,7 @@ fig, ax = plt.subplots()
 im = ax.imshow(data[0])
 
 ax.set_xlabel('Наклон')
-ax.set_ylabel('Макс. приращение')
+ax.set_ylabel('Максимальное приращение')
 
 # Show all ticks and label them with the respective list entries
 ax.set_xticks(range(len(a)), labels=[str(i) for i in a])
@@ -45,6 +45,6 @@ for i in range(len(b)):
     for j in range(len(a)):
         text = ax.text(j, i, str(data[0][i,j])+str(data[1][i,j]), ha="center", va="center", color="w", fontsize='x-small')
 
-ax.set_title("grad")
+ax.set_title("Поиск градиентной функции")
 fig.tight_layout()
-plt.savefig('grad_optimal.png')
+plt.savefig('grad_optimal.png', dpi=300)

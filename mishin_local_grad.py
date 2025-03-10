@@ -10,11 +10,10 @@ from result import Result
 
 ALGO_NAME = "mishin_local_grad"
 
-# sigmoid function
-
+KSI = 10E-6
 def lipschitz_estimate(points):
     r = 1.1
-    eps = 10E-6
+
     lamb_max = max([math.fabs(points[i][1]-points[i-1][1])/(points[i][0]-points[i-1][0]) for i in range(1, len(points))])
     x_max = max([points[i][0]-points[i-1][0] for i in range(1, len(points))])
 
@@ -31,7 +30,7 @@ def lipschitz_estimate(points):
     for i in range(1, n):
         lamb = max([math.fabs(points[j][1]-points[j-1][1])/(points[j][0]-points[j-1][0]) for j in build_list(i, n-1)])
         gamma = (lamb_max/x_max)*(points[i][0]-points[i-1][0])
-        H.append(max(eps, lamb, gamma))
+        H.append(max(KSI, lamb, gamma))
 
     mu = np.repeat([r*h for h in H], 2)
     return mu
@@ -45,14 +44,10 @@ def grad_boost(spline, points, mu, grad_smoother):
     n = len(points)
 
     for i in range(1, n):
-        k = math.fabs(points[i][1] - points[i - 1][1]) / (points[i][0] - points[i - 1][0])
-        if mu[2 * (i - 1)] * vel[2 * (i - 1)] > max([0, k]):
-            mu[2 * (i - 1)] *= vel[2 * (i - 1)]
-        if mu[2 * (i - 1) + 1] * vel[2 * (i - 1) + 1] > max([0, k]):
-            mu[2 * (i - 1) + 1] *= vel[2 * (i - 1) + 1]
+        mu[2 * (i - 1)] = max([mu[2 * (i - 1)] * vel[2 * (i - 1)], KSI])
+        mu[2 * (i - 1) + 1] = max([mu[2 * (i - 1) + 1] * vel[2 * (i - 1) + 1], KSI])
 
     return mu
-
 
 def build_P(spline, points, mu):
     def F(t):
