@@ -1,43 +1,38 @@
-import sergeev, mishin_local, mishin_local_grad, mishin_localnconvex_grad
+import math
+
+import NL
+import CubicSpline
+import CubicSplineGrad
+import GradNL
+import QradNL
+
 import statistics
 import functions
 
 func_pick = functions.funcs
 
-def grad1(x, a, b):
-    if a == 0 or b == 0:
-        return 1
-
-    if -b * a <= x <= b * a:
-        return (1 / a) * x + 1
-    elif x < -b * a:
-        return -b + 1
+def smoother(x, a, b):
+    if x < 0:
+        return (2/math.pi) * math.atan((a-1)*x/b) + 1
     else:
-        return b + 1
+        return (a-1)*(2/math.pi) * math.atan(x/b) + 1
 
-def accel1(x, a, b):
-    if a == 0 or b == 0:
-        return 1
 
-    if -b * a <= x <= b * a:
-        return (1 / a) * x + 1
-    elif x < -b * a:
-        return -b + 1
-    else:
-        return b + 1
+smoother1=lambda x: smoother(x, 1.2, 4.6)
+smoother2=lambda x: smoother(x, 1.35, 1.9)
+smoother3=lambda x: smoother(x, 1.7, 2.35)
 
-#dir_names = ['sergeev', ]
-#statistics.create_dir_tree(names)
+algo_names = ['NL', 'CubicSpline', 'CubicSplineGrad', 'GradNL', 'QradNL']
+statistics.create_dir_tree(algo_names)
 
 results = list()
-results.append(sergeev.minimize(func_pick))
-results.append(mishin_local.minimize(func_pick))
-results.append(mishin_local_grad.minimize(func_pick, grad_smoother=lambda x: grad1(x, 0.25, 0.4)))
-results.append(mishin_localnconvex_grad.minimize(func_pick, grad_smoother=lambda x: grad1(x, 0.25, 0.4), exponent=6.5))
 
-names = ['sergeev', 'mishin_local', 'mishin_local_grad', 'mishin_local_grad_qconvex']
-statistics.write_comparison(names, results, func_pick)
-
+results.append(NL.minimize(func_pick))
+results.append(CubicSpline.minimize(func_pick))
+results.append(CubicSplineGrad.minimize(func_pick, grad_smoother=smoother1))
+results.append(GradNL.minimize(func_pick, grad_smoother=smoother2))
+results.append(QradNL.minimize(func_pick, grad_smoother=smoother3))
+statistics.write_comparison(algo_names, results, func_pick)
 
 
 

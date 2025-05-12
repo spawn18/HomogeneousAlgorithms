@@ -1,19 +1,17 @@
 import math
-import os
+import statistics
+import numpy as np
 
 from matplotlib import pyplot as plt
-
-import statistics
-
-import numpy as np
 from scipy.interpolate import CubicSpline
 from result import Result
 
-ALGO_NAME = "mishin_local"
+ALGO_NAME = "CubicSpline"
+R = 1.1
+KSI = 10E-6
 
 def lipschitz_estimate(points):
-    r = 1.1
-    eps = 10E-6
+
     lamb_max = max([math.fabs(points[i][1]-points[i-1][1])/(points[i][0]-points[i-1][0]) for i in range(1, len(points))])
     x_max = max([points[i][0]-points[i-1][0] for i in range(1, len(points))])
 
@@ -30,15 +28,15 @@ def lipschitz_estimate(points):
     for i in range(1, n):
         lamb = max([math.fabs(points[j][1]-points[j-1][1])/(points[j][0]-points[j-1][0]) for j in build_list(i, n-1)])
         gamma = lamb_max*(points[i][0]-points[i-1][0])/x_max
-        H.append(max(eps, lamb, gamma))
+        H.append(max(KSI, lamb, gamma))
 
-    mu = np.array([r*h for h in H])
+    mu = np.array([R*h for h in H])
     return mu
 
 def build_P(spline, points, mu):
     def F(t):
         conditions = [(points[i-1][0] <= t) & (t <= points[i][0]) for i in range(1, len(points))]
-        funcs = [lambda x, i=j, s=spline: np.max([s(x)-mu[2*(i-1)]*(x-points[i-1][0]), s(x)+mu[2*(i-1)+1]*(x-points[i][0])], axis=0) for j in range(1, len(points))]
+        funcs = [lambda x, i=j, s=spline: np.max([s(x)-mu[i-1]*(x-points[i-1][0]), s(x)+mu[i-1]*(x-points[i][0])], axis=0) for j in range(1, len(points))]
         return np.piecewise(t, conditions, funcs)
     return F
 
@@ -90,14 +88,13 @@ def minimize(funcs):
     results = list()
 
     for i, f in enumerate(funcs):
-        eps = 10E-4 * (f.bounds[1] - f.bounds[0])  # Точность
-        points = [(f.bounds[0], f.eval(f.bounds[0])), (f.bounds[1], f.eval(f.bounds[1]))]  # Точки на которых происходят вычисления
-        counter = 2  # кол-во вычислений функции f
+        eps = 10E-4 * (f.bounds[1] - f.bounds[0])
+        points = [(f.bounds[0], f.eval(f.bounds[0])), (f.bounds[1], f.eval(f.bounds[1]))]
+        counter = 2
 
-        # Пока разность между сгенер. точками x не меньше эпсилона
         while True:
-            x, y = zip(*points)  # разбиваем на 2 массива, x и y
-            spline = CubicSpline(x, y, bc_type='clamped')  # вычисляем сплайн по точкам
+            x, y = zip(*points)
+            spline = CubicSpline(x, y, bc_type='clamped')
 
             mu = lipschitz_estimate(points)
             arg = minimize_P(spline, points, mu)
@@ -106,28 +103,27 @@ def minimize(funcs):
             y0 = f.eval(arg)
             counter += 1
 
-            diff = min([math.fabs(arg-p[0]) for p in points]) # находим точность
+            diff = min([math.fabs(arg-p[0]) for p in points])
 
             if diff < eps:
                 break
 
-            points.append((arg, f.eval(arg)))  # добавляем новую точку
-            points.sort(key=lambda x: x[0])  # сортируем точки
+            points.append((arg, f.eval(arg)))
+            points.sort(key=lambda x: x[0])
 
-        """
         P = build_P(spline, points, mu)
         xs = np.arange(f.bounds[0], f.bounds[1], 0.0001)
         plt.plot(x, y, 'o', label='Точки испытаний')
         plt.plot(x0, y0, 'or', label='Точка следующего испытания')
         plt.plot(xs, spline(xs), 'blue', label='Интерполянт (m)')
         plt.plot(xs, P(xs), 'red', label='Критерий (P)')
-        plt.plot(xs, f.eval(xs), 'green', label='Целевая функция (f)')
+        plt.plot(xs, f.eval(xs), 'black', label='Целевая функция (f)')
         plt.legend(loc='best', ncol=2)
-        plt.savefig(os.path.join(statistics.algo_path(ALGO_NAME, i + 1), 'final'))
+        plt.grid()
+        plt.savefig(statistics.algo_path(ALGO_NAME, i + 1), dpi=300)
         plt.close()
-        """
 
-        success = statistics.check_convergence(f.min_x, x, 2*eps)
+        success = statistics.check_convergence(f.min_x, x, eps)
         results.append(Result(points, counter, x0, y0, f.min_y, success))
 
     return results

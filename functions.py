@@ -1,6 +1,8 @@
 import math
 import numpy as np
 
+
+
 class f1:
     bounds = [-1.5, 11.0]
     min_x = [10.0]
@@ -66,7 +68,7 @@ class f7:
 
 class f8:
     bounds = [-10.0, 10.0]
-    min_x = [-1]
+    min_x = [-7.08351, -0.80032, 5.48286]
     min_y = -14.508007927187695
 
     @staticmethod

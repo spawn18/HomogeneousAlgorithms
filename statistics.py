@@ -3,11 +3,12 @@ import math
 import os
 
 import numpy as np
-from matplotlib import pyplot as plt
 
 FUNCS_DIR = "func"
 COMPARISON_DIR = "comp"
 ITERS_DIR = "iters"
+
+SAVE = False
 
 def iter_path(algo_name, i):
     return os.path.join(FUNCS_DIR+str(i), algo_name, ITERS_DIR)
@@ -23,7 +24,6 @@ def check_convergence(x_mins, xks, eps):
     return False
 
 def write_comparison(names, results, functions):
-    n = len(results)
     m = len(functions)
 
     with open('comparison.csv', 'w') as file:
@@ -31,7 +31,7 @@ def write_comparison(names, results, functions):
 
         wr.writerow(['']+names)
         for i in range(0, m):
-            wr.writerow([str(i+1)]+[str(res[i].count) if res[i].success else '-' for res in results])
+            wr.writerow([str(i+1)]+[str(res[i].count) if res[i].success else str(res[i].count)+'*' for res in results])
         wr.writerow(['Среднее']+[str(np.average([r.count for r in res])) for res in results])
 
 
@@ -40,8 +40,3 @@ def create_dir_tree(algo_names):
         func_dir = FUNCS_DIR + str(i+1)
         if not os.path.exists(func_dir):
             os.mkdir(func_dir)
-
-        for name in algo_names:
-            algo_dir = os.path.join(func_dir, name)
-            if not os.path.exists(algo_dir):
-                os.mkdir(algo_dir)
