@@ -8,7 +8,7 @@ FUNCS_DIR = "func"
 COMPARISON_DIR = "comp"
 ITERS_DIR = "iters"
 
-SAVE = False
+SAVE = True
 
 def iter_path(algo_name, i):
     return os.path.join(FUNCS_DIR+str(i), algo_name, ITERS_DIR)

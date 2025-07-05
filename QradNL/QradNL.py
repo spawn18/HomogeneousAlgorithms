@@ -117,15 +117,16 @@ def minimize(funcs, grad_smoother):
             F = build_F(points, mu)
             xs = np.arange(f.bounds[0], f.bounds[1], 0.0001)
             plt.plot(x, y, 'o', label='Точки испытаний')
-            plt.plot(x0, y0, 'ro', label='Минимум')
-            plt.plot(xs, F(xs), 'red', label='Миноранта')
+            plt.plot(xs, F(xs), 'limegreen', label='Критерий')
             plt.plot(xs, f.eval(xs), 'black', label='Целевая функция')
+            plt.plot(x0, y0, 'xy', label='Минимум')
+            plt.title("Кол-во испытаний: " + str(counter))
             plt.grid()
             plt.legend(loc='best', ncol=2)
             plt.savefig(statistics.algo_path(ALGO_NAME, i+1), dpi=300)
             plt.close()
 
-        success = statistics.check_convergence(f.min_x, x, 2*eps)
+        success = statistics.check_convergence(f.min_x, x, eps)
         results.append(Result(points, counter, x0, y0, f.min_y, success))
 
     return results

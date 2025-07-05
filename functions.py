@@ -185,3 +185,80 @@ class f20:
 
 
 funcs = [f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,f19,f20]
+
+
+class f1s:
+    bounds = [0.0, math.pi]
+    min_x = [2.933735]
+    min_y = -1.937583
+
+    @staticmethod
+    def eval(x):
+        return sum([np.fabs(np.cos(k*x))*np.fabs(np.sin(k*x))*np.cos(x) for k in range(1,6)])
+
+class f2s:
+    bounds = [1, 5]
+    min_x = [3*math.pi/2]
+    min_y = 0.097755+550
+
+    @staticmethod
+    def eval(x):
+        return (1/x)*np.fabs((1/np.sqrt(x))*np.cos(x))+(1/np.sqrt(x))*np.fabs((1/x)*np.sin(x))+550
+
+class f3s:
+    bounds = [-2.0+1372.0, 2.0+1372.0]
+    min_x = [math.pi/2+1372]
+    min_y = 0.0713225-18888.0
+
+    @staticmethod
+    def eval(x):
+        return 1/(-np.log(np.fabs(np.cos(x-1372)) + 0.0001) + np.exp(x-1372))-18888
+
+class f4s:
+    bounds = [1.0, 10.0]
+    min_x = [2*math.pi]
+    min_y = -0.322712-14522
+
+    @staticmethod
+    def eval(x):
+        return sum([1/np.sqrt(k)*np.log((20/k)*np.fabs(np.cos(k*x)*np.sin(x/k))+np.exp(np.fabs(np.sin(k*x))))*np.sin(np.sin(k)) for k in range(1,21)])-14522
+
+class f5s:
+    bounds = [50.0, 53.0]
+    min_x = [51.86518]
+    min_y = 0.065892
+
+    @staticmethod
+    def eval(x):
+        return math.prod([np.exp(-np.fabs(np.sin(2**np.fabs(np.log(n))*x))) for n in range(1, 4)])
+
+sfuncs = [f1s, f2s, f3s, f4s, f5s]
+
+class f5_od1:
+    bounds = [0.0, 1.2]
+    min_x = [0.9660858]
+    min_y = -1.4890725386896007+5
+
+    @staticmethod
+    def eval(x):
+        return (3*x-1.4)*np.sin(18*x)+5
+
+class f5_od2:
+    bounds = [0.0, 1.2]
+    min_x = [0.9660858]
+    min_y = -1.4890725386896007-314
+
+    @staticmethod
+    def eval(x):
+        return (3*x-1.4)*np.sin(18*x)-314
+
+class f5_od3:
+    bounds = [0.0, 1.2]
+    min_x = [0.9660858]
+    min_y = -1.4890725386896007+0.0003
+
+    @staticmethod
+    def eval(x):
+        return (3*x-1.4)*np.sin(18*x)+0.0003
+
+fod = [f5_od1, f5_od2, f5_od3]

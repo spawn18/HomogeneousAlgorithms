@@ -1,7 +1,7 @@
 import math
 import numpy as np
 from matplotlib import pyplot as plt
-from scipy.interpolate import CubicSpline, Akima1DInterpolator
+from scipy.interpolate import CubicSpline
 
 import statistics
 from result import Result
@@ -34,7 +34,7 @@ def lipschitz_estimate(points):
     return mu
 def grad_boost(points, mu, grad_smoother):
     x,y = zip(*points)
-    spline = CubicSpline(x, y, bc_type='clamped')  # вычисляем сплайн по точкам
+    spline = CubicSpline(x, y, bc_type='clamped')
 
     n = len(points)
 
@@ -76,45 +76,44 @@ def minimize(funcs, grad_smoother):
     results = list()
 
     for i, f in enumerate(funcs):
-        eps = 10E-4 * (f.bounds[1] - f.bounds[0])  # Точность
-        points = [(f.bounds[0], f.eval(f.bounds[0])), (f.bounds[1], f.eval(f.bounds[1]))]  # Точки на которых происходят вычисления
-        counter = 2  # кол-во вычислений функции f
+        eps = 10E-4 * (f.bounds[1] - f.bounds[0])
+        points = [(f.bounds[0], f.eval(f.bounds[0])), (f.bounds[1], f.eval(f.bounds[1]))]
+        counter = 2
 
-        # Пока разность между сгенер. точками x не меньше эпсилона
         while True:
-            x, y = zip(*points)  # разбиваем на 2 массива, x и y
+            x, y = zip(*points)
 
-            mu = lipschitz_estimate(points)  # аппроксимируем константу липшица кусочно-линейно
+            mu = lipschitz_estimate(points)
             mu = grad_boost(points, mu, grad_smoother)
             arg = min_F(points, mu)
 
             x0 = min(points, key=lambda p: p[1])[0]
             y0 = min(points, key=lambda p: p[1])[1]
 
-            diff = min([math.fabs(arg-p[0]) for p in points]) # находим точность
+            diff = min([math.fabs(arg-p[0]) for p in points])
 
             if diff < eps:
                 break
 
-            points.append((arg, f.eval(arg)))  # добавляем новую точку
-            points.sort(key=lambda x: x[0])  # сортируем точки
-            counter += 1  # увеличиваем счетчик
+            points.append((arg, f.eval(arg)))
+            points.sort(key=lambda x: x[0])
+            counter += 1
 
         if statistics.SAVE:
             x, y = zip(*points)
             F = build_F(points, mu)
             xs = np.arange(f.bounds[0], f.bounds[1], 0.0001)
             plt.plot(x, y, 'o', label='Точки испытаний')
-            plt.plot(x0, y0, 'ro', label='Минимум')
-            plt.plot(xs, F(xs), 'red', label='Миноранта')
+            plt.plot(xs, F(xs), 'limegreen', label='Критерий')
             plt.plot(xs, f.eval(xs), 'black', label='Целевая функция')
+            plt.plot(x0, y0, 'xy', label='Минимум')
+            plt.title("Кол-во испытаний: " + str(counter))
             plt.legend(loc='best', ncol=2)
             plt.grid()
             plt.savefig(statistics.algo_path(ALGO_NAME, i+1), dpi=300)
             plt.close()
 
-
-        success = statistics.check_convergence(f.min_x, x, 2*eps)
+        success = statistics.check_convergence(f.min_x, x, eps)
         results.append(Result(points, counter, x0, y0, f.min_y, success))
 
     return results

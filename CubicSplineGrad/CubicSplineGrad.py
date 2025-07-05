@@ -114,14 +114,13 @@ def minimize(funcs, grad_smoother):
     results = list()
 
     for i, f in enumerate(funcs):
-        eps = 10E-4 * (f.bounds[1] - f.bounds[0])  # Точность
-        points = [(f.bounds[0], f.eval(f.bounds[0])), (f.bounds[1], f.eval(f.bounds[1]))]  # Точки на которых происходят вычисления
-        counter = 2  # кол-во вычислений функции f
+        eps = 10E-4 * (f.bounds[1] - f.bounds[0])
+        points = [(f.bounds[0], f.eval(f.bounds[0])), (f.bounds[1], f.eval(f.bounds[1]))]
+        counter = 2
 
-        # Пока разность между сгенер. точками x не меньше эпсилона
         while True:
-            x, y = zip(*points)  # разбиваем на 2 массива, x и y
-            spline = CubicSpline(x, y, bc_type='clamped')  # вычисляем сплайн по точкам
+            x, y = zip(*points)
+            spline = CubicSpline(x, y, bc_type='clamped')
 
             mu = lipschitz_estimate(points)
             mu = grad_boost(spline, points, mu, grad_smoother)
@@ -131,27 +130,27 @@ def minimize(funcs, grad_smoother):
             y0 = f.eval(arg)
             counter += 1
 
-            diff = min([math.fabs(arg-p[0]) for p in points]) # находим точность
+            diff = min([math.fabs(arg-p[0]) for p in points])
 
             if diff < eps:
                 break
 
-            points.append((arg, f.eval(arg)))  # добавляем новую точку
-            points.sort(key=lambda x: x[0])  # сортируем точки
+            points.append((arg, f.eval(arg)))
+            points.sort(key=lambda x: x[0])
 
         if statistics.SAVE:
             P = build_P(spline, points, mu)
             xs = np.arange(f.bounds[0], f.bounds[1], 0.0001)
             plt.plot(x, y, 'o', label='Точки испытаний')
-            plt.plot(x0, y0, 'or', label='Точка следующего испытания')
-            plt.plot(xs, spline(xs), 'blue', label='Интерполянт (m)')
-            plt.plot(xs, P(xs), 'red', label='Критерий (P)')
-            plt.plot(xs, f.eval(xs), 'black', label='Целевая функция (f)')
+            plt.plot(xs, spline(xs), 'blue', label='Интерполянт')
+            plt.plot(xs, P(xs), 'limegreen', label='Критерий')
+            plt.plot(xs, f.eval(xs), 'black', label='Целевая функция')
+            plt.plot(x0, y0, 'xy', label='Минимум')
+            plt.title("Кол-во испытаний: " + str(counter))
             plt.legend(loc='best', ncol=2)
             plt.grid()
             plt.savefig(statistics.algo_path(ALGO_NAME, i + 1), dpi=300)
             plt.close()
-
 
         success = statistics.check_convergence(f.min_x, x, eps)
         results.append(Result(points, counter, x0, y0, f.min_y, success))

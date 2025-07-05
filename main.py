@@ -18,9 +18,9 @@ def smoother(x, a, b):
         return (a-1)*(2/math.pi) * math.atan(x/b) + 1
 
 
-smoother1=lambda x: smoother(x, 1.2, 4.6)
-smoother2=lambda x: smoother(x, 1.35, 1.9)
-smoother3=lambda x: smoother(x, 1.7, 2.35)
+smoother1=lambda x: smoother(x, 1.8, 7.75)
+smoother2=lambda x: smoother(x, 1.3, 6.4)
+smoother3=lambda x: smoother(x, 1.65, 3.7)
 
 algo_names = ['NL', 'CubicSpline', 'CubicSplineGrad', 'GradNL', 'QradNL']
 statistics.create_dir_tree(algo_names)

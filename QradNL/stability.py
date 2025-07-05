@@ -20,8 +20,8 @@ def average(a, b):
 
 average_vec = np.vectorize(average)
 
-a = np.linspace(1.7*(1-0.005), 1.7*(1+0.005), 10, dtype=np.float64)
-b = np.linspace(2.35*(1-0.005), 2.35*(1+0.005), 10, dtype=np.float64)
+a = np.linspace(1.65*(1-0.005), 1.65*(1+0.005), 11, dtype=np.float64)
+b = np.linspace(3.7*(1-0.005), 3.7*(1+0.005), 11, dtype=np.float64)
 
 A,B = np.meshgrid(a, b)
 data = average_vec(A,B)
@@ -32,16 +32,14 @@ print("std: " + str(np.std(data[0])))
 fig, ax = plt.subplots()
 im = ax.imshow(data[0])
 
-ax.set_xlabel('a')
-ax.set_ylabel('b')
-
-ax.set_xticks(range(len(a)), labels=[round(x, 4) for x in a], fontsize=4)
-ax.set_yticks(range(len(b)), labels=[round(x, 4) for x in b], fontsize=4)
+ax.set_xlabel('α')
+ax.set_ylabel('β')
+ax.set_xticks(range(len(a)), labels=[round(x, 4) for x in a], fontsize=6)
+ax.set_yticks(range(len(b)), labels=[round(x, 4) for x in b], fontsize=6)
 
 for i in range(len(b)):
     for j in range(len(a)):
         text = ax.text(j, i, str(data[0][i,j])+str(data[1][i,j]), ha="center", va="center", color="w", fontsize=6)
 
-ax.set_title("Анализ чувствительности решения")
 fig.tight_layout()
 plt.savefig('stability.png', dpi=400)

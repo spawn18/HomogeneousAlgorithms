@@ -62,7 +62,6 @@ def minimize(funcs):
             x0 = min(points, key=lambda p: p[1])[0]
             y0 = min(points, key=lambda p: p[1])[1]
 
-            #diff = points[t][0] - points[t-1][0]
             diff = min([math.fabs(arg-p[0]) for p in points])
             if diff < eps:
                 break
@@ -71,16 +70,18 @@ def minimize(funcs):
             points.sort(key=lambda x: x[0])
             counter += 1
 
-        F = build_F(points, mu)
-        xs = np.arange(f.bounds[0], f.bounds[1], 0.0001)
-        plt.plot(x, y, 'o', label='Точки испытаний')
-        plt.plot(x0, y0, 'ro', label='Текущий минимум')
-        plt.plot(xs, F(xs), 'red', label='Миноранта (F)')
-        plt.plot(xs, f.eval(xs), 'black', label='Целевая функция (f)')
-        plt.legend(loc='best', ncol=2)
-        plt.grid()
-        plt.savefig(statistics.algo_path(ALGO_NAME, i+1), dpi=300)
-        plt.close()
+        if statistics.SAVE:
+            F = build_F(points, mu)
+            xs = np.arange(f.bounds[0], f.bounds[1], 0.0001)
+            plt.plot(x, y, 'o', label='Точки испытаний')
+            plt.plot(xs, F(xs), 'limegreen', label='Критерий')
+            plt.plot(xs, f.eval(xs), 'black', label='Целевая функция')
+            plt.plot(x0, y0, 'xy', label='Минимум')
+            plt.title("Кол-во испытаний: " + str(counter))
+            plt.legend(loc='best', ncol=2)
+            plt.grid()
+            plt.savefig(statistics.algo_path(ALGO_NAME, i+1), dpi=300)
+            plt.close()
 
         success = statistics.check_convergence(f.min_x, x, eps)
         results.append(Result(points, counter, x0, y0, f.min_y, success))
