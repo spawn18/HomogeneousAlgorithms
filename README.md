@@ -82,7 +82,7 @@ $$ \mu_{right} = max \{ \theta_{right}^i \mu_i, Q+\xi\}$$
 else
 $$ \mu_{left} = max \{ \theta_{left}^i \mu_i, -Q + \xi\}$$
 $$ \mu_{right} = max \{ \theta_{right}^i \mu_i, \xi\}$$
-obtain s_k(x) = \min\{ \mu_{left}(x-x_{i-1}), \mu_{right}(x_i-x)\}$
+obtain $s_k(x) = \min\limits_{i=\overline{1,k}}\{ \mu_{left}(x-x_{i-1}), \mu_{right}(x_i-x)\}$
 7) $x_{k+1}=\arg\min\limits_{x\in D}P_k(m_k(x), s_k(x)), \ k:=k+1$
 8) if $\min\limits_{i=\overline{1,k}}|x_{k+1}-x_i|<\epsilon$, where $\epsilon$ is tolerance, then stop, else go to step 2. 
 
@@ -122,7 +122,7 @@ $$
 
 This definition gives a smooth $\theta$ function satisfying properties above.
 
-## Results & comparison
+## Results (evaluation count comparison)
 | Function | NL   | CubicSpline | CubicSplineGrad | GradNL | QradNL |
 |----------|------|-------------|-----------------|--------|--------|
 | 1        | 23   | 24          | 13              | 13     | 13     |
@@ -148,6 +148,18 @@ This definition gives a smooth $\theta$ function satisfying properties above.
 | Average  | 38.0 | 40.6        | 33.55           | 35.15  | 28.35  |
 
 ## Graphs
+<img src="pictures/CubicSpline.png" width="250">
+<img src="pictures/CubicSplineGrad.png" width="250">
+<img src="pictures/GradNL.png" width="250">
+<img src="pictures/NL.png" width="250">
+<img src="pictures/QradNL.png" width="250">
+
+### Experimental functions
+<img src="pictures/Spec1.png" width="250">
+<img src="pictures/Spec2.png" width="250">
+<img src="pictures/Spec3.png" width="250">
+<img src="pictures/Spec4.png" width="250">
+<img src="pictures/Spec5.png" width="250">
 
 [^1]: Сергеев, Ярослав Дмитриевич. Диагональные методы глобальной оптимизации / Я. Д. Сергеев, Д. Е. Квасов.
 [^2]: https://www.mathnet.ru/links/0b9a247877b1fbf0e0b8f41cc75e2ebd/zvmmf6654.pdf

@@ -9,7 +9,7 @@ import QradNL
 import statistics
 import functions
 
-func_pick = functions.funcs
+func_pick = functions.sfuncs
 
 def smoother(x, a, b):
     if x < 0:
