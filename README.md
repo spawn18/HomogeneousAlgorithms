@@ -15,7 +15,7 @@ An optimization algorithm is called **homogenuous** if it generates same test po
 Homogenuous algorithms are independent of the range of values.
 
 There are several approaches, the most common is the following.
-Let $D=[a,b]$ be the domain and $M = \{x_0, ..., x_n\}$ the set of starting points. Then optimization goes like this:
+Let $D=[a,b]$ be the domain and $M = {x_0, ..., x_n}$ the set of starting points. Then optimization goes like this:
 1) $\forall x_i\in M$ calculate $f(x_i)$, set $k:=n$
 2) Build $m_k(x), s_k(x)$
 3) Build $P_k(x)=m_k(x)-s_k(x)$
