@@ -122,7 +122,7 @@ $$
 
 This definition gives a smooth $\theta$ function satisfying properties above.
 
-## Comparison
+## Results & comparison
 | Function | NL   | CubicSpline | CubicSplineGrad | GradNL | QradNL |
 |----------|------|-------------|-----------------|--------|--------|
 | 1        | 23   | 24          | 13              | 13     | 13     |
