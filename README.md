@@ -231,18 +231,18 @@ This definition gives a smooth $`\theta`$ function satisfying properties above.
 
 ## Graphs
 
-<img src="pictures/CubicSpline.png" width="250">
-<img src="pictures/CubicSplineGrad.png" width="250">
-<img src="pictures/GradNL.png" width="250">
-<img src="pictures/NL.png" width="250">
-<img src="pictures/QradNL.png" width="250">
+<img src="pictures/CubicSpline.png" width="350">
+<img src="pictures/CubicSplineGrad.png" width="350">
+<img src="pictures/GradNL.png" width="350">
+<img src="pictures/NL.png" width="350">
+<img src="pictures/QradNL.png" width="350">
 
 ### Experimental functions
-<img src="pictures/Spec1.png" width="250">
-<img src="pictures/Spec2.png" width="250">
-<img src="pictures/Spec3.png" width="250">
-<img src="pictures/Spec4.png" width="250">
-<img src="pictures/Spec5.png" width="250">
+<img src="pictures/Spec1.png" width="350">
+<img src="pictures/Spec2.png" width="350">
+<img src="pictures/Spec3.png" width="350">
+<img src="pictures/Spec4.png" width="350">
+<img src="pictures/Spec5.png" width="350">
 
 [^1]: Сергеев, Ярослав Дмитриевич. *Диагональные методы глобальной оптимизации* / Я. Д. Сергеев, Д. Е. Квасов.  
 [^2]: [Piyavskiy algorithm reference (mathnet.ru)](https://www.mathnet.ru/links/0b9a247877b1fbf0e0b8f41cc75e2ebd/zvmmf6654.pdf)
