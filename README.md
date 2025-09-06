@@ -245,4 +245,4 @@ This definition gives a smooth $`\theta`$ function satisfying properties above.
 <img src="pictures/Spec5.png" width="350">
 
 [^1]: Сергеев, Ярослав Дмитриевич. *Диагональные методы глобальной оптимизации* / Я. Д. Сергеев, Д. Е. Квасов.  
-[^2]: [Piyavskiy algorithm reference (mathnet.ru)](https://www.mathnet.ru/links/0b9a247877b1fbf0e0b8f41cc75e2ebd/zvmmf6654.pdf)
+[^2]: https://www.mathnet.ru/links/0b9a247877b1fbf0e0b8f41cc75e2ebd/zvmmf6654.pdf
