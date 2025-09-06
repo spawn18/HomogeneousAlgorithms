@@ -34,7 +34,6 @@ def write_comparison(names, results, functions):
             wr.writerow([str(i+1)]+[str(res[i].count) if res[i].success else str(res[i].count)+'*' for res in results])
         wr.writerow(['Среднее']+[str(np.average([r.count for r in res])) for res in results])
 
-
 def create_dir_tree(algo_names):
     for i in range(0, 20):
         func_dir = FUNCS_DIR + str(i+1)
