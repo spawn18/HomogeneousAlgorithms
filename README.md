@@ -11,33 +11,33 @@ One of the common assumptions for black-box functions is their Lipshitz continui
 
 ## Homogenuous algorithms
 
-An optimization algorithm is called **homogenuous** if it generates same test points for functions in the set $\{f(x)+c \ |\  c \in \mathbb{R}\}$.
+An optimization algorithm is called **homogenuous** if it generates same test points for functions in the set $`\{f(x)+c \ |\  c \in \mathbb{R}\}`$.
 Homogenuous algorithms are independent of the range of values.
 
 There are several approaches, the most common is the following.
-Let $D=[a,b]$ be the domain and $M = {x_0, ..., x_n}$ the set of starting points. Then optimization goes like this:
-1) $\forall x_i\in M$ calculate $f(x_i)$, set $k:=n$
-2) Build $m_k(x), s_k(x)$
-3) Build $P_k(x)=m_k(x)-s_k(x)$
-4) Calculate $x_{k+1} = \arg\min\limits_{x\in D} \ P_k(x)$
-5) Calculate $f(x_{k+1})$
-6) if some  condition $\phi(x|x_0,...,x_k)$ is met then stop, else $k:=k+1$ and go to step 2 
+Let $`D=[a,b]`$ be the domain and $`M = \{x_0, ..., x_n\}`$ the set of starting points. Then optimization goes like this:
+1) $`\forall x_i\in M`$ calculate $`f(x_i)`$, set $`k:=n`$
+2) Build $`m_k(x), s_k(x)`$
+3) Build $`P_k(x)=m_k(x)-s_k(x)`$
+4) Calculate $`x_{k+1} = \arg\min\limits_{x\in D} \ P_k(x)`$
+5) Calculate $`f(x_{k+1})`$
+6) if some  condition $`\phi(x|x_0,...,x_k)`$ is met then stop, else $`k:=k+1`$ and go to step 2 
 
-Take $x^* = \arg\min\limits_{i=\overline{1,k}} f(x_i)$, $f^* = f(x^*)$ as solution
+Take $`x^* = \arg\min\limits_{i=\overline{1,k}} f(x_i)`$, $`f^* = f(x^*)`$ as solution
 
 ### Modeling process
-$m(x)$ interpolates the target function
+$`m(x)`$ interpolates the target function
 
-1) $m(x_i) = f(x_i), \ i= \overline{1,k}$
-2) $m(x) \in Lip(L_m)$
-3) $m(x_i \ |\  x_1, f(x_1) + c, ..., x_k, f(x_k) + c) = m(x_i \ |\  x_1, f(x_1), ..., x_k, f(x_k)) + c$
+1) $`m(x_i) = f(x_i), \ i= \overline{1,k}`$
+2) $`m(x) \in Lip(L_m)`$
+3) $`m(x_i \ |\  x_1, f(x_1) + c, ..., x_k, f(x_k) + c) = m(x_i \ |\  x_1, f(x_1), ..., x_k, f(x_k)) + c`$
 
-$s(x)$ is the measure of uncertainty. Intuitively it dictates how much do we not know about target function at a given point
+$`s(x)`$ is the measure of uncertainty. Intuitively it dictates how much do we not know about target function at a given point
 
-1) $s(x_i) = 0$
-2) $s(x) \geq 0$
-3) $s(x) \in Lip(L_s)$
-4) $s(x \ | \ x_1, f(x_1) + c, ..., x_k, f(x_k) + c) = s(x \ |\  x_1, f(x_1), ..., x_k, f(x_k))$
+1) $`s(x_i) = 0`$
+2) $`s(x) \geq 0`$
+3) $`s(x) \in Lip(L_s)`$
+4) $`s(x \ | \ x_1, f(x_1) + c, ..., x_k, f(x_k) + c) = s(x \ |\  x_1, f(x_1), ..., x_k, f(x_k))`$
 
 $P(x)$ is the minimum criteria. It's global minimum dictates the most uncertainty in the model of a target function, thus giving a potential candidate point to calculate.
 
